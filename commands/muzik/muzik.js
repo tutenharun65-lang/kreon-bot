@@ -1,5 +1,5 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, getVoiceConnection } = require('@discordjs/voice');
+﻿const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus, entersState, getVoiceConnection } = require('@discordjs/voice');
 const ytdl = require('@distube/ytdl-core');
 const yts = require('yt-search');
 
@@ -12,7 +12,7 @@ async function playNext(guildId) {
     queues.delete(guildId);
     return;
   }
-  const song = q.songs[0];
+  const song = q.songs.at(0);
   try {
     const stream = ytdl(song.url, { filter: 'audioonly', highWaterMark: 1 << 25, quality: 'highestaudio' });
     const resource = createAudioResource(stream);
@@ -35,22 +35,11 @@ module.exports = [
       if (!vc) return i.reply({ content: '🔊 Önce bir **ses kanalına** girmelisin!', ephemeral: true });
       await i.deferReply();
 
-      const query = i.options.getString('şarkı');
-      let songInfo;
-      if (ytdl.validateURL(query)) {
-        const info = await ytdl.getBasicInfo(query);
-        songInfo = { title: info.videoDetails.title, url: info.videoDetails.video_url, duration: info.videoDetails.lengthSeconds + ' sn', thumb: info.videoDetails.thumbnails[0]?.url };
-      } else {
-        const res = await yts(query);
-        const v = res.videos[0];
-        if (!v) return i.followUp('❌ Aradığın şarkı bulunamadı!');
-        songInfo = { title: v.title, url: v.url, duration: v.timestamp, thumb: v.thumbnail };
-      }
-
       let q = queues.get(i.guild.id);
       if (!q) {
         const player = createAudioPlayer();
-        const conn = joinVoiceChannel({ channelId: vc.id, guildId: i.guild.id, adapterCreator: i.guild.voiceAdapterCreator });
+        const conn = joinVoiceChannel({ channelId: vc.id, guildId: i.guild.id, adapterCreator: i.guild.voiceAdapterCreator, selfDeaf: true });
+        await entersState(conn, VoiceConnectionStatus.Ready, 15000);
         conn.subscribe(player);
         q = { conn, player, songs: [] };
         queues.set(i.guild.id, q);
@@ -58,6 +47,18 @@ module.exports = [
           q.songs.shift();
           playNext(i.guild.id);
         });
+      }
+
+      const query = i.options.getString('şarkı');
+      let songInfo;
+      if (ytdl.validateURL(query)) {
+        const info = await ytdl.getBasicInfo(query);
+        songInfo = { title: info.videoDetails.title, url: info.videoDetails.video_url, duration: info.videoDetails.lengthSeconds + ' sn', thumb: info.videoDetails.thumbnails?.at(0)?.url };
+      } else {
+        const res = await yts(query);
+        const v = res.videos.at(0);
+        if (!v) return i.followUp('❌ Aradığın şarkı bulunamadı!');
+        songInfo = { title: v.title, url: v.url, duration: v.timestamp, thumb: v.thumbnail };
       }
 
       q.songs.push(songInfo);
