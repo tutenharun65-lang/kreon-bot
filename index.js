@@ -27,17 +27,19 @@ app.get('/logout', (req, res) => { res.setHeader('Set-Cookie', 'kreon_sess=; Pat
 
 app.get('/auth/callback', async (req, res) => {
     const code = req.query.code;
-    if (!code || !process.env.CLIENT_SECRET) return res.redirect('/');
+    if (!code) return res.send('Hata: Discord onay kodu gelmedi.');
+    if (!process.env.CLIENT_SECRET) return res.send('Hata: Render Environment icinde CLIENT_SECRET eksik!');
     try {
         const tokenRes = await fetch('https://discord.com', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: clientId, client_secret: process.env.CLIENT_SECRET, grant_type: 'authorization_code', code, redirect_uri: redirectUri }) });
         const tokenData = await tokenRes.json();
+        if (!tokenData.access_token) return res.send('Discord OAuth2 Hatasi: ' + JSON.stringify(tokenData));
         const user = await (await fetch('https://discord.com', { headers: { Authorization: `Bearer ${tokenData.access_token}` } })).json();
         const rawGuilds = await (await fetch('https://discord.com/guilds', { headers: { Authorization: `Bearer ${tokenData.access_token}` } })).json();
-        const manageable = Array.isArray(rawGuilds) ? rawGuilds.filter(g => (BigInt(g.permissions) & 0x20n) === 0x20n).map(g => ({ id: g.id, name: g.name, icon: g.icon })) : [];
+        const manageable = Array.isArray(rawGuilds) ? rawGuilds.filter(g => (BigInt(g.permissions) & 0x20n) === 0x20n || (BigInt(g.permissions) & 0x8n) === 0x8n).map(g => ({ id: g.id, name: g.name, icon: g.icon })) : [];
         const payload = Buffer.from(JSON.stringify({ user: { id: user.id, username: user.username, avatar: user.avatar }, guilds: manageable })).toString('base64');
         res.setHeader('Set-Cookie', `kreon_sess=${payload}; Path=/; HttpOnly; Max-Age=86400`);
         res.redirect('/dashboard');
-    } catch (e) { console.error(e); res.redirect('/'); }
+    } catch (e) { res.send('Baglanti Hatasi: ' + e.message); }
 });
 
 app.get('/api/me', (req, res) => { const s = getSession(req); if (!s) return res.status(401).json({ error: 'Giriş gerekli' }); res.json({ user: s.user, guilds: s.guilds.map(g => ({ ...g, botIn: client.guilds.cache.has(g.id) })) }); });
@@ -45,7 +47,7 @@ app.get('/api/guild/:id', (req, res) => { const g = client.guilds.cache.get(req.
 app.post('/api/guild/:id', (req, res) => { guildSettings.set(req.params.id, req.body); res.json({ ok: true }); });
 app.get('/invite', (req, res) => res.redirect(`https://discord.com{clientId}&permissions=8&scope=bot%20applications.commands${req.query.guild_id ? '&guild_id=' + req.query.guild_id : ''}`));
 app.get('/api/stats', (req, res) => res.json({ guilds: client.guilds.cache.size, users: client.guilds.cache.reduce((a, g) => a + (g.memberCount || 0), 0), ping: client.ws.ping > 0 ? client.ws.ping : 24 }));
-app.listen(port, () => console.log(`🌐 Site ve Panel ${port} portunda aktif.`));
+app.listen(port, () => console.log(`🌐 Site ve Kontrol Paneli ${port} portunda aktif.`));
 
 client.commands = new Collection();
 for (const folder of fs.readdirSync(path.join(__dirname, 'commands'))) {

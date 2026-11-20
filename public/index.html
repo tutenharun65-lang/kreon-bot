@@ -10,7 +10,6 @@ body{background:#090b10;color:#f3f4f6;line-height:1.6}
 a{text-decoration:none;color:inherit}
 .nav{display:flex;justify-content:space-between;align-items:center;padding:16px 7%;background:#0f121b;border-bottom:1px solid #1b2030;position:sticky;top:0;z-index:50}
 .logo{font-size:1.5rem;font-weight:800;color:#818cf8}
-.nav-links{display:flex;gap:24px;color:#9ca3af;font-weight:500}
 .btn{padding:10px 20px;border-radius:10px;font-weight:600;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:none}
 .btn-primary{background:#5865F2;color:#fff}
 .btn-secondary{background:#161a26;color:#fff;border:1px solid #283046}
@@ -23,7 +22,7 @@ a{text-decoration:none;color:inherit}
 .tabs{display:flex;gap:6px;padding:12px 16px;background:#0f121b;border-bottom:1px solid #23283b;overflow-x:auto}
 .tab{padding:8px 14px;border-radius:8px;background:transparent;color:#9ca3af;font-weight:600;cursor:pointer;border:none;white-space:nowrap}
 .tab.active{background:#5865F2;color:#fff}
-.chat-area{padding:24px;min-height:190px;background:#313338}
+.chat-area{padding:24px;min-height:160px;background:#313338}
 .msg{display:flex;gap:14px}
 .avatar{width:42px;height:42px;border-radius:50%;background:#5865F2;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
 .embed{background:#2b2d31;border-left:4px solid #5865F2;padding:12px 16px;border-radius:6px;margin-top:8px;max-width:520px}
@@ -42,52 +41,54 @@ footer{text-align:center;padding:30px;border-top:1px solid #1b2030;color:#6b7280
 <body>
 <nav class="nav">
   <div class="logo">⚡ Kreon Bot</div>
-  <div class="nav-links"><a href="#ozellikler">15+ Özellik</a><a href="#istatistik">İstatistikler</a></div>
-  <div style="display:flex;gap:10px"><a href="/dashboard" class="btn btn-secondary">🎛️ Kontrol Paneli</a><a href="/invite" target="_blank" class="btn btn-primary">Discord'a Ekle</a></div>
+  <div style="display:flex;gap:10px">
+    <a href="/dashboard" class="btn btn-secondary">🎛️ Kontrol Paneli</a>
+    <a href="/invite" target="_blank" class="btn btn-primary">Discord'a Ekle</a>
+  </div>
 </nav>
 <section class="hero">
   <h1>Sunucunuz için <span>hepsi bir arada</span> Discord botu</h1>
   <p>Moderasyon, Anti-Nuke güvenlik, ekonomi, seviye, müzik, ticket, çekiliş, davet takip, geçici ses odaları ve yapay zekâ tek bir botta.</p>
-  <div class="hero-btns"><a href="/invite" target="_blank" class="btn btn-primary">🚀 Sunucuna Ekle</a><a href="/dashboard" class="btn btn-secondary">🎛️ Kontrol Panelini Aç</a></div>
+  <div class="hero-btns">
+    <a href="/dashboard" class="btn btn-primary">🎛️ Kontrol Panelini Aç</a>
+    <a href="/invite" target="_blank" class="btn btn-secondary">🚀 Sunucuna Ekle</a>
+  </div>
   <div class="preview-box">
     <div class="tabs">
       <button class="tab active" onclick="showTab('karsilama',this)">👋 Karşılama</button>
       <button class="tab" onclick="showTab('seviye',this)">🏆 Seviye</button>
       <button class="tab" onclick="showTab('ekonomi',this)">💰 Ekonomi</button>
       <button class="tab" onclick="showTab('ticket',this)">🎫 Ticket</button>
-      <button class="tab" onclick="showTab('muzik',this)">🎵 Müzik</button>
-      <button class="tab" onclick="showTab('cekilis',this)">🎉 Çekiliş</button>
       <button class="tab" onclick="showTab('moderasyon',this)">🛡️ Moderasyon</button>
       <button class="tab" onclick="showTab('guvenlik',this)">🔒 Anti-Nuke</button>
-      <button class="tab" onclick="showTab('ai',this)">🤖 Yapay Zekâ</button>
     </div>
     <div class="chat-area" id="chat-content"></div>
   </div>
 </section>
-<section class="stats" id="istatistik">
+<section class="stats">
   <div class="stat-card"><div class="stat-num" id="guild-count">...</div><div>Aktif Sunucu</div></div>
   <div class="stat-card"><div class="stat-num" id="user-count">...</div><div>Toplam Kullanıcı</div></div>
   <div class="stat-card"><div class="stat-num" id="ping-count">...</div><div>Bot Gecikmesi</div></div>
   <div class="stat-card"><div class="stat-num">15+</div><div>Entegre Sistem</div></div>
 </section>
-<section class="section" id="ozellikler">
+<section class="section">
   <h2 class="section-title">Bir botta olabilecek tüm sistemler tek çatıda</h2>
   <div class="grid">
-    <div class="card"><h3>🛡️ Gelişmiş Moderasyon</h3><p>Ban, kick, süreli susturma (timeout), uyarı puanları ve toplu mesaj silme komutları.</p></div>
-    <div class="card"><h3>🔒 Anti-Nuke & Sunucu Guard</h3><p>İzinsiz kanal/rol silme, toplu ban ve zararlı bot girişlerini anında engelleyen koruma.</p></div>
-    <div class="card"><h3>🤖 Akıllı Oto-Moderasyon</h3><p>Küfür, reklam, Discord davet linki, büyük harf ve spam mesajlarını otomatik temizler.</p></div>
+    <div class="card"><h3>🛡️ Gelişmiş Moderasyon</h3><p>Ban, kick, süreli susturma, uyarı puanları ve toplu mesaj silme komutları.</p></div>
+    <div class="card"><h3>🔒 Anti-Nuke & Sunucu Guard</h3><p>İzinsiz kanal/rol silme, toplu ban ve zararlı bot girişlerini anında engeller.</p></div>
+    <div class="card"><h3>🤖 Akıllı Oto-Moderasyon</h3><p>Küfür, reklam, Discord davet linki ve spam mesajlarını otomatik temizler.</p></div>
     <div class="card"><h3>🏆 Seviye & Rank Sistemi</h3><p>Sohbet ve ses aktifliğine göre XP kazanma, otomatik rol ödülleri ve sıralama.</p></div>
-    <div class="card"><h3>💰 Ekonomi & Mini Oyunlar</h3><p>Günlük ödül, çalışma, banka, sunucu mağazası, yazı-tura ve para transferi.</p></div>
-    <div class="card"><h3>🎫 Gelişmiş Ticket (Destek)</h3><p>Butonlu destek talebi oluşturma, yetkili devralma ve sohbet geçmişi kaydı.</p></div>
+    <div class="card"><h3>💰 Ekonomi & Mini Oyunlar</h3><p>Günlük ödül, çalışma, banka, mağaza, yazı-tura ve para transferi.</p></div>
+    <div class="card"><h3>🎫 Gelişmiş Ticket (Destek)</h3><p>Butonlu destek talebi oluşturma, yetkili devralma ve sohbet kaydı.</p></div>
     <div class="card"><h3>🎵 Yüksek Kaliteli Müzik</h3><p>Ses kanallarında kesintisiz müzik oynatma, şarkı sırası ve döngü modu.</p></div>
     <div class="card"><h3>👋 Karşılama & Otorol</h3><p>Yeni üyelere özel hoş geldin mesajları, otomatik rol ve isim düzenleme.</p></div>
     <div class="card"><h3>🎉 Şartlı Çekiliş Sistemi</h3><p>Rol veya seviye şartlı çekilişler, anlık bitirme ve yeniden kazanan seçme.</p></div>
     <div class="card"><h3>🎭 Buton & Emoji Rol</h3><p>Üyelerin tek tıkla renk, oyun ve bildirim rollerini alabileceği menüler.</p></div>
     <div class="card"><h3>📨 Davet Takip (Invite)</h3><p>Kimin kaç kişi davet ettiğini sayma, sahte hesapları ayıklama ve ödül rol.</p></div>
-    <div class="card"><h3>🔊 Geçici Ses Odaları</h3><p>Odaya giren üyelere özel kişisel ses kanalı açma, kilitleme ve üye yönetme.</p></div>
-    <div class="card"><h3>📋 Detaylı Denetim Kaydı</h3><p>Silinen mesajlar, ses giriş-çıkışları, rol ve kanal değişiklikleri için kayıtlar.</p></div>
+    <div class="card"><h3>🔊 Geçici Ses Odaları</h3><p>Odaya giren üyelere özel kişisel ses kanalı açma ve kilitleme.</p></div>
+    <div class="card"><h3>📋 Detaylı Denetim Kaydı</h3><p>Silinen mesajlar, ses giriş-çıkışları, rol ve kanal değişiklikleri kayıtları.</p></div>
     <div class="card"><h3>🧠 Yapay Zekâ Asistanı</h3><p>Botu etiketleyerek veya özel kanalda üyelerin sorularını anında yanıtlar.</p></div>
-    <div class="card"><h3>💬 Oto-Cevap & Duyuru</h3><p>Belirlenen kelimelere otomatik yanıt verme ve zamanlanmış kanal duyuruları.</p></div>
+    <div class="card"><h3>💬 Oto-Cevap & Duyuru</h3><p>Belirlenen kelimelere otomatik yanıt verme ve zamanlanmış duyurular.</p></div>
   </div>
 </section>
 <footer>© 2026 Kreon Bot • Tüm Hakları Saklıdır.</footer>
@@ -97,11 +98,8 @@ const previews = {
   seviye: `<div class="msg"><div class="avatar">K</div><div><strong>Kreon Bot</strong><div>🎉 Tebrikler <strong>@Deniz</strong>, <strong>18. seviyeye</strong> ulaştın!</div><div class="embed">Sıra #3 • XP: 32.840 • Ödül Rol: @Aktif Üye</div></div></div>`,
   ekonomi: `<div class="msg"><div class="avatar">K</div><div><strong>Kreon Bot</strong><div>💰 <strong>Günlük Ödül Toplandı!</strong></div><div class="embed">+2.500 Kreon Coin • Toplam Bakiye: 48.750 Coin</div></div></div>`,
   ticket: `<div class="msg"><div class="avatar">K</div><div><strong>Kreon Bot</strong><div>🎫 <strong>Destek Talebi Oluşturuldu (#042)</strong></div><div class="embed">Açan: @Deniz • Kategori: Yetkili Başvurusu</div></div></div>`,
-  muzik: `<div class="msg"><div class="avatar">K</div><div><strong>Kreon Bot</strong><div>🎵 Ses kanalında oynatılıyor:</div><div class="embed">ŞİMDİ ÇALIYOR: Pinhani - Dünyadan Uzak (03:54)</div></div></div>`,
-  cekilis: `<div class="msg"><div class="avatar">K</div><div><strong>Kreon Bot</strong><div>🎉 <strong>YENİ ÇEKİLİŞ BAŞLADI!</strong></div><div class="embed">Ödül: 1 Aylık Discord Nitro • Şart: Seviye 5+</div></div></div>`,
   moderasyon: `<div class="msg"><div class="avatar">K</div><div><strong>Kreon Bot</strong><div>⚠️ <strong>Otomatik Moderasyon İşlemi</strong></div><div class="embed">Kullanıcı: @user84 • Sebep: Reklam Linki Silindi</div></div></div>`,
-  guvenlik: `<div class="msg"><div class="avatar">K</div><div><strong>Kreon Bot</strong><div>🚨 <strong>Anti-Nuke Koruması Devrede!</strong></div><div class="embed">İzinsiz kanal silme engellendi, şüpheli yetkili yasaklandı.</div></div></div>`,
-  ai: `<div class="msg"><div class="avatar">K</div><div><strong>Kreon Bot</strong><div>🤖 <strong>@Deniz:</strong> Aktifliği nasıl artırırız?</div><div class="embed">Haftalık ses etkinlikleri ve seviye rol ödülleri aktifliği %60 artırır!</div></div></div>`
+  guvenlik: `<div class="msg"><div class="avatar">K</div><div><strong>Kreon Bot</strong><div>🚨 <strong>Anti-Nuke Koruması Devrede!</strong></div><div class="embed">İzinsiz kanal silme engellendi, şüpheli yetkili yasaklandı.</div></div></div>`
 };
 function showTab(k,b){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));if(b)b.classList.add('active');document.getElementById('chat-content').innerHTML=previews[k]}
 showTab('karsilama');
