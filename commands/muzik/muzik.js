@@ -1,16 +1,8 @@
 ﻿const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus, entersState, getVoiceConnection } = require('@discordjs/voice');
-const play = require('play-dl');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus, entersState, getVoiceConnection, StreamType } = require('@discordjs/voice');
+const scdl = require('soundcloud-downloader').default;
 
 const queues = new Map();
-let scReady = false;
-
-async function ensureSoundCloud() {
-  if (scReady) return;
-  const cid = await play.getFreeClientID();
-  await play.setToken({ soundcloud: { client_id: cid } });
-  scReady = true;
-}
 
 async function playNext(guildId) {
   const q = queues.get(guildId);
@@ -21,12 +13,12 @@ async function playNext(guildId) {
   }
   const song = q.songs.at(0);
   try {
-    await ensureSoundCloud();
-    const s = await play.stream(song.url);
-    const resource = createAudioResource(s.stream, { inputType: s.type });
+    const stream = await scdl.download(song.url);
+    const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary });
     q.player.play(resource);
   } catch (e) {
     console.error('Ses akış hatası:', e);
+    if (q.textChannel) q.textChannel.send('⚠️ Şarkı akışı başlatılamadı: `' + e.message + '`').catch(() => {});
     q.songs.shift();
     playNext(guildId);
   }
@@ -37,17 +29,21 @@ module.exports = [
     data: new SlashCommandBuilder()
       .setName('oynat')
       .setDescription('Ses kanalına girer ve istediğiniz şarkıyı çalar.')
-      .addStringOption(o => o.setName('şarkı').setDescription('Şarkı adı veya linki').setRequired(true)),
+      .addStringOption(o => o.setName('şarkı').setDescription('Şarkı adı veya SoundCloud linki').setRequired(true)),
     async execute(i) {
       const vc = i.member.voice?.channel;
       if (!vc) return i.reply({ content: '🔊 Önce bir **ses kanalına** girmelisin!', ephemeral: true });
       await i.deferReply();
 
       try {
-        await ensureSoundCloud();
         const query = i.options.getString('şarkı');
-        const results = await play.search(query, { source: { soundcloud: 'tracks' }, limit: 1 });
-        const track = results.at(0);
+        let track;
+        if (scdl.isValidUrl(query)) {
+          track = await scdl.getInfo(query);
+        } else {
+          const res = await scdl.search({ query, resourceType: 'tracks', limit: 1 });
+          track = res.collection?.at(0);
+        }
         if (!track) return i.editReply('❌ Aradığın şarkı bulunamadı!');
 
         let q = queues.get(i.guild.id);
@@ -56,7 +52,7 @@ module.exports = [
           const conn = joinVoiceChannel({ channelId: vc.id, guildId: i.guild.id, adapterCreator: i.guild.voiceAdapterCreator, selfDeaf: true });
           await entersState(conn, VoiceConnectionStatus.Ready, 15000);
           conn.subscribe(player);
-          q = { conn, player, songs: [] };
+          q = { conn, player, songs: [], textChannel: i.channel };
           queues.set(i.guild.id, q);
           player.on(AudioPlayerStatus.Idle, () => {
             q.songs.shift();
@@ -69,7 +65,9 @@ module.exports = [
           });
         }
 
-        const songInfo = { title: track.name, url: track.url, duration: track.durationRaw || 'Canlı', thumb: track.thumbnail };
+        const sn = Math.floor((track.duration || 0) / 1000);
+        const sure = sn > 0 ? `${Math.floor(sn / 60)}:${String(sn % 60).padStart(2, '0')}` : 'Canlı';
+        const songInfo = { title: track.title, url: track.permalink_url, duration: sure, thumb: track.artwork_url };
         q.songs.push(songInfo);
 
         if (q.songs.length === 1) {
@@ -84,7 +82,7 @@ module.exports = [
           await i.editReply(`🎶 Sıraya eklendi (**#${q.songs.length}**): **${songInfo.title}**`);
         }
       } catch (e) {
-        await i.editReply('❌ Müzik başlatılamadı: `' + e.message + '`');
+        await i.editReply('❌ Hata oluştu: `' + e.message + '`');
       }
     }
   },
