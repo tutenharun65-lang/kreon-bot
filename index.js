@@ -16,7 +16,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
 
-app.get('/api/me', (req, res) => {
+app.get('/api/me', async (req, res) => { res.setHeader('Cache-Control', 'no-store'); await client.guilds.fetch().catch(() => {});
     const guilds = client.guilds.cache.map(g => ({ id: g.id, name: g.name, hasIcon: Boolean(g.icon) }));
     res.json({ guilds });
 });
