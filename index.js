@@ -1,3 +1,4 @@
+process.env.FFMPEG_PATH = require('@ffmpeg-installer/ffmpeg').path;
 const fs = require('node:fs');
 const path = require('node:path');
 const express = require('express');
@@ -10,7 +11,6 @@ const port = process.env.PORT || 3000;
 const clientId = '1569848116973277234';
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildVoiceStates] });
 
-process.env.FFMPEG_PATH = require('ffmpeg-static'); const { Player } = require('discord-player'); const { DefaultExtractors } = require('@discord-player/extractor'); const player = new Player(client); (async () => { try { await player.extractors.loadMulti(DefaultExtractors); } catch (e) { console.log('Extractor uyarısı:', e.message); } })();
 connectDB();
 registerSystems(client);
 app.use(express.json());
