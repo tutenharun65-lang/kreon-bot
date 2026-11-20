@@ -12,8 +12,6 @@ const client = new Client({ intents:[GatewayIntentBits.Guilds,GatewayIntentBits.
 
 connectDB();
 registerSystems(client);
-const { initLavalink } = require('./lavalink');
-initLavalink(client);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -81,6 +79,8 @@ for (const folder of fs.readdirSync(path.join(__dirname, 'commands'))) {
     }
 }
 
+const { initLavalink } = require('./lavalink');
+initLavalink(client);
 client.once(Events.ClientReady, async c => {
     console.log('✅ Kreon Bot aktif: ' + c.user.tag + ' | Yüklü komut: ' + client.commands.size);
     try { await c.application.commands.set(slashData); } catch (e) { console.error(e); }
