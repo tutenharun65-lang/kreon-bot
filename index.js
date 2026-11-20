@@ -22,7 +22,7 @@ function getSession(req) {
 }
 
 app.get('/dashboard', (req, res) => { if (!getSession(req)) return res.redirect('/login'); res.sendFile(path.join(__dirname, 'public', 'dashboard.html')); });
-app.get('/login', (req, res) => { const id = (process.env.CLIENT_ID || '1569848116973277234').replace(/\D/g, '') || '1569848116973277234'; const u = 'https://discord.com' + id + '&redirect_uri=https%3A%2F%://onrender.com%2Fauth%2Fcallback&response_type=code&scope=identify%20guilds'; res.send('<!DOCTYPE html><html><body style="background:#090b10;color:#fff;font-family:sans-serif;text-align:center;padding-top:100px"><h2>Discord ile yonlendiriliyorsunuz...</h2><br><a href="' + u + '" style="background:#5865F2;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">Otomatik acilmazsa buraya tikla</a><script>window.location.replace("' + u + '");</script></body></html>'); });
+app.get('/login', (req, res) => res.redirect('https://discord.com'));
 app.get('/logout', (req, res) => { res.setHeader('Set-Cookie', 'kreon_sess=; Path=/; Max-Age=0'); res.redirect('/'); });
 
 app.get('/auth/callback', async (req, res) => {
