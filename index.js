@@ -52,7 +52,7 @@ app.get('/api/me', async (req, res) => {
         botGuilds.set(g.id, { id: g.id, name: g.name, hasIcon: Boolean(g.icon), iconUrl: g.icon ? '/api/icon/' + g.id : null, botIn: true, owner: true });
     });
 
-    const saved = mongoose.connection.readyState === 1 ? await SavedGuild.find().lean() : []; saved.forEach(sg => { if (!botGuilds.has(sg.guildId)) botGuilds.set(sg.guildId, { id: sg.guildId, name: sg.name, iconUrl: null, botIn: false, owner: true }); }); const tok = getUserToken(req);
+    const tok = getUserToken(req);
     if (tok) {
         try {
             const ur = await fetch('https://discord.com', { headers: { Authorization: 'Bearer ' + tok } });

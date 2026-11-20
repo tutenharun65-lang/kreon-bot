@@ -49,12 +49,7 @@ input[type="checkbox"]{width:22px;height:22px;accent-color:#5865F2;cursor:pointe
 <div class="select-page" id="select-view">
   <h1>Bir sunucu seçin</h1>
   <p>Sunucular her 1 dakikada bir otomatik güncellenir.</p>
-  <div class="add-box">
-    <input type="text" id="new-g-name" placeholder="Sunucu Adı (Örn: Kreon Bot)">
-    <input type="text" id="new-g-id" placeholder="Sunucu ID (İsteğe bağlı)">
-    <button class="btn btn-purple" onclick="addManualGuild()">➕ Listeye Ekle</button>
-  </div>
-  <div id="server-list">Sunucular yükleniyor...</div>
+  <div id="sync-bar" style="margin-bottom:20px"><a href="https://://discord.com" class="btn btn-purple">?? Bulunmad??? Sunucular?m? Otomatik Getir</a></div><div id="server-list">Sunucular yükleniyor...</div>
 </div>
 <div class="dash-wrap" id="dash-view">
   <aside class="sidebar">
@@ -124,6 +119,7 @@ async function addManualGuild() {
 async function init() {
   const res = await fetch('/api/me');
   const data = await res.json();
+  if (data.synced) { const sb = document.getElementById('sync-bar'); if (sb) sb.style.display = 'none'; }
   const list = document.getElementById('server-list');
   list.innerHTML = (data.guilds || []).map(function(g) {
     const first = g.name ? g.name.charAt(0).toUpperCase() : 'S';
