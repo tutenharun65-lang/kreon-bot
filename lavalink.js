@@ -1,8 +1,9 @@
 ﻿const { Shoukaku, Connectors } = require('shoukaku');
 
 const Nodes = [
-  { name: 'Ana-Node', url: '://serenetia.com', auth: 'https://dsc.gg/ajidevserver', secure: true },
-  { name: 'Yedek-Node', url: 'v4.lavalink.rocks:443', auth: 'horizxon.tech', secure: true }
+  { name: 'HeavenCloud-v4', url: 'free-lava.heavencloud.in:4000', auth: 'heavencloud.in', secure: false },
+  { name: 'Serenetia-v4', url: '://serenetia.com', auth: 'BatuManaBisa', secure: true },
+  { name: 'Hewkawar-v4', url: 'lavalink.hewkawar.xyz:443', auth: 'HewkawArrPass', secure: true }
 ];
 
 let shoukaku = null;
