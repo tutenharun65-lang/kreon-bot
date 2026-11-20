@@ -180,7 +180,7 @@ async function init() {
   const av = data.user.avatar ? `https://discordapp.com{data.user.id}/${data.user.avatar}.png` : 'https://discordapp.com';
   document.getElementById('user-pill').innerHTML = `<img src="${av}"><span>${data.user.username}</span><a href="/logout" style="color:#ef4444;text-decoration:none;margin-left:6px">Çıkış</a>`;
   document.getElementById('server-list').innerHTML = allGuilds.map(g => {
-    const ic = g.icon ? `<img src="https://discordapp.com{g.id}/${g.icon}.png">` : g.name.charAt(0);
+    const ic = g.icon ? <img src="/api/icon/${g.id}" onerror="this.parentElement.innerText='${g.name.charAt(0)}'"> : g.name.charAt(0);
     const btn = g.botIn
       ? `<button class="btn btn-purple" onclick="selectGuild('${g.id}')">Yönet</button>`
       : `<a href="/invite?guild_id=${g.id}" target="_blank" class="btn btn-dark">Davet et</a>`;
@@ -215,5 +215,6 @@ init();
 </script>
 </body>
 </html>
+
 
 
