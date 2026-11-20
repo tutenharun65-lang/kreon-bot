@@ -117,7 +117,7 @@ async function init() {
         : firstLetter;
       const actionBtn = g.botIn
         ? '<button class="btn btn-purple" onclick="selectGuild(\'' + g.id + '\')">Y\u00f6net</button>'
-        : '<a href="/invite?guild_id=' + g.id + '" class="btn btn-dark">Davet et</a>';
+        : '<a href="discord://://discord.com" class="btn btn-dark">Davet et</a>';
       const roleText = g.owner ? 'Owner' : 'Admin';
       return '<div class="server-row"><div class="server-left"><div class="s-icon">' + iconHtml + '</div><div><strong>' + g.name + '</strong><div class="s-role">' + roleText + '</div></div></div>' + actionBtn + '</div>';
     }).join('');
