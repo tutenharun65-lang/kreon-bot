@@ -8,8 +8,9 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 const clientId = '1569848116973277234';
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildVoiceStates] });
 
+process.env.FFMPEG_PATH = require('ffmpeg-static'); const { Player } = require('discord-player'); const { DefaultExtractors } = require('@discord-player/extractor'); const { YoutubeiExtractor } = require('discord-player-youtubei'); const player = new Player(client); (async () => { await player.extractors.register(YoutubeiExtractor, {}); await player.extractors.loadMulti(DefaultExtractors); })();
 connectDB();
 registerSystems(client);
 app.use(express.json());
