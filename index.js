@@ -46,9 +46,9 @@ app.post('/api/guild/:id', async (req, res) => {
     res.json({ ok: true });
 });
 
-app.get('/invite', (req, res) => {
+app.get('/invite', (req, res) => { const g = req.query.guild_id ? '&guild_id=' + req.query.guild_id : '';
     const id = client.user?.id || '1569848116973277234';
-    res.redirect(`https://discord.com{id}&permissions=8&scope=bot%20applications.commands`);
+    res.redirect(`https://discord.com{id}&permissions=8&scope=bot%20applications.commands${g}`);
 });
 
 app.get('/api/bot-avatar', async (req, res) => { try { const u = client.user?.displayAvatarURL({ size: 128, extension: 'png', forceStatic: true }); if (!u) return res.status(404).end(); const r = await fetch(u); res.setHeader('Content-Type', 'image/png'); res.send(Buffer.from(await r.arrayBuffer())); } catch { res.status(404).end(); } });

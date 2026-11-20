@@ -105,6 +105,7 @@ async function init() {
   try {
     const res = await fetch('/api/me');
     const data = await res.json();
+    if (location.search.includes('mode=invite')) { document.querySelector('#select-view h1').innerText = 'Botu Sunucuna Ekle'; document.querySelector('#select-view p').innerText = 'Kreon Bot\'u y?netmek veya yeni bir sunucuya davet etmek i?in se?in.'; }
     const list = document.getElementById('server-list');
     if (!data.guilds || data.guilds.length === 0) {
       list.innerHTML = '<p style="color:#9ca3af">Bot henüz hiçbir sunucuda ekli değil.</p>';
