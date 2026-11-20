@@ -114,10 +114,14 @@ async function init() {
     }
     list.innerHTML = data.guilds.map(function(g) {
       const firstLetter = g.name ? g.name.charAt(0).toUpperCase() : 'S';
-      const iconHtml = g.hasIcon
-        ? '<img src="/api/icon/' + g.id + '" onerror="this.remove();this.parentNode.innerText=\'' + firstLetter + '\'">'
+      const iconHtml = g.iconUrl
+        ? '<img src="' + g.iconUrl + '" onerror="this.remove();this.parentNode.innerText=\'' + firstLetter + '\'">'
         : firstLetter;
-      return '<div class="server-row"><div class="server-left"><div class="s-icon">' + iconHtml + '</div><div><strong>' + g.name + '</strong><div class="s-role">Owner</div></div></div><div style="display:flex;gap:8px"><button class="btn btn-purple" onclick="selectGuild(\'' + g.id + '\')">Yönet</button><a href="/invite?guild_id=' + g.id + '" target="_blank" class="btn btn-dark">Davet et</a></div></div>';
+      const actionBtn = g.botIn
+        ? '<button class="btn btn-purple" onclick="selectGuild(\'' + g.id + '\')">Y\u00f6net</button>'
+        : '<a href="/invite?guild_id=' + g.id + '" target="_blank" class="btn btn-dark">Davet et</a>';
+      const roleText = g.owner ? 'Owner' : 'Admin';
+      return '<div class="server-row"><div class="server-left"><div class="s-icon">' + iconHtml + '</div><div><strong>' + g.name + '</strong><div class="s-role">' + roleText + '</div></div></div>' + actionBtn + '</div>';
     }).join('');
     document.getElementById('guild-dropdown').innerHTML = data.guilds.map(function(g) {
       return '<option value="' + g.id + '">' + g.name + '</option>';
