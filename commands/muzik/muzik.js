@@ -10,7 +10,7 @@ async function playNext(guildId) {
     return;
   }
   const song = q.songs.at(0);
-  await q.player.playTrack({ track: { encoded: song.encoded } });
+  q.player.playTrack({ track: { encoded: song.encoded } }).catch(e => console.error('Track hatas?:', e));
 }
 
 module.exports = [
