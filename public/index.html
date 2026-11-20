@@ -94,12 +94,12 @@ footer{text-align:center;padding:30px;border-top:1px solid #1b2030;color:#6b7280
 <footer>© 2026 Kreon Bot • Tüm Hakları Saklıdır.</footer>
 <script>
 const previews = {
-  karsilama: `<div class="msg"><div class="avatar">K</div><div><strong>Kreon Bot</strong><div>Aramıza hoş geldin <strong>@Deniz</strong>! Seninle birlikte <strong>1.250</strong> kişi olduk.</div><div class="embed">Otomatik Rol Verildi: @Üye • Davet Eden: @Kaan</div></div></div>`,
-  seviye: `<div class="msg"><div class="avatar">K</div><div><strong>Kreon Bot</strong><div>🎉 Tebrikler <strong>@Deniz</strong>, <strong>18. seviyeye</strong> ulaştın!</div><div class="embed">Sıra #3 • XP: 32.840 • Ödül Rol: @Aktif Üye</div></div></div>`,
-  ekonomi: `<div class="msg"><div class="avatar">K</div><div><strong>Kreon Bot</strong><div>💰 <strong>Günlük Ödül Toplandı!</strong></div><div class="embed">+2.500 Kreon Coin • Toplam Bakiye: 48.750 Coin</div></div></div>`,
-  ticket: `<div class="msg"><div class="avatar">K</div><div><strong>Kreon Bot</strong><div>🎫 <strong>Destek Talebi Oluşturuldu (#042)</strong></div><div class="embed">Açan: @Deniz • Kategori: Yetkili Başvurusu</div></div></div>`,
-  moderasyon: `<div class="msg"><div class="avatar">K</div><div><strong>Kreon Bot</strong><div>⚠️ <strong>Otomatik Moderasyon İşlemi</strong></div><div class="embed">Kullanıcı: @user84 • Sebep: Reklam Linki Silindi</div></div></div>`,
-  guvenlik: `<div class="msg"><div class="avatar">K</div><div><strong>Kreon Bot</strong><div>🚨 <strong>Anti-Nuke Koruması Devrede!</strong></div><div class="embed">İzinsiz kanal silme engellendi, şüpheli yetkili yasaklandı.</div></div></div>`
+  karsilama: `<div class="msg"><img src="/api/bot-avatar" class="avatar" style="object-fit:cover"><div><strong>Kreon Bot</strong><div>Aramıza hoş geldin <strong>@Deniz</strong>! Seninle birlikte <strong>1.250</strong> kişi olduk.</div><div class="embed">Otomatik Rol Verildi: @Üye • Davet Eden: @Kaan</div></div></div>`,
+  seviye: `<div class="msg"><img src="/api/bot-avatar" class="avatar" style="object-fit:cover"><div><strong>Kreon Bot</strong><div>🎉 Tebrikler <strong>@Deniz</strong>, <strong>18. seviyeye</strong> ulaştın!</div><div class="embed">Sıra #3 • XP: 32.840 • Ödül Rol: @Aktif Üye</div></div></div>`,
+  ekonomi: `<div class="msg"><img src="/api/bot-avatar" class="avatar" style="object-fit:cover"><div><strong>Kreon Bot</strong><div>💰 <strong>Günlük Ödül Toplandı!</strong></div><div class="embed">+2.500 Kreon Coin • Toplam Bakiye: 48.750 Coin</div></div></div>`,
+  ticket: `<div class="msg"><img src="/api/bot-avatar" class="avatar" style="object-fit:cover"><div><strong>Kreon Bot</strong><div>🎫 <strong>Destek Talebi Oluşturuldu (#042)</strong></div><div class="embed">Açan: @Deniz • Kategori: Yetkili Başvurusu</div></div></div>`,
+  moderasyon: `<div class="msg"><img src="/api/bot-avatar" class="avatar" style="object-fit:cover"><div><strong>Kreon Bot</strong><div>⚠️ <strong>Otomatik Moderasyon İşlemi</strong></div><div class="embed">Kullanıcı: @user84 • Sebep: Reklam Linki Silindi</div></div></div>`,
+  guvenlik: `<div class="msg"><img src="/api/bot-avatar" class="avatar" style="object-fit:cover"><div><strong>Kreon Bot</strong><div>🚨 <strong>Anti-Nuke Koruması Devrede!</strong></div><div class="embed">İzinsiz kanal silme engellendi, şüpheli yetkili yasaklandı.</div></div></div>`
 };
 function showTab(k,b){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));if(b)b.classList.add('active');document.getElementById('chat-content').innerHTML=previews[k]}
 showTab('karsilama');
@@ -107,4 +107,5 @@ fetch('/api/stats').then(r=>r.json()).then(d=>{document.getElementById('guild-co
 </script>
 </body>
 </html>
+
 
