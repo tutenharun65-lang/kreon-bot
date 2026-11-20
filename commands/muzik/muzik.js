@@ -1,16 +1,16 @@
 ﻿const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { getLavalink, queues } = require('../../lavalink');
 
-async function playNext(guildId) {
+function playNext(guildId) {
   const q = queues.get(guildId);
   if (!q || q.songs.length === 0) {
     const sh = getLavalink();
-    if (sh) await sh.leaveVoiceChannel(guildId).catch(() => {});
+    if (sh) sh.leaveVoiceChannel(guildId).catch(() => {});
     queues.delete(guildId);
     return;
   }
   const song = q.songs.at(0);
-  q.player.playTrack({ track: { encoded: song.encoded } }).catch(e => console.error('Track hatas?:', e));
+  q.player.playTrack({ track: { encoded: song.encoded } }).catch(e => console.error('PlayTrack hatası:', e));
 }
 
 module.exports = [
@@ -24,47 +24,59 @@ module.exports = [
       if (!vc) return i.reply({ content: '🔊 Önce bir **ses kanalına** girmelisin!', ephemeral: true });
       await i.deferReply();
 
-      const sh = getLavalink();
-      const node = sh && sh.options.nodeResolver(sh.nodes);
-      if (!node) return i.editReply('⏳ Ses sunucusu şu an bağlanıyor, 10 saniye sonra tekrar dene.');
+      try {
+        const sh = getLavalink();
+        const node = sh && sh.options.nodeResolver(sh.nodes);
+        if (!node) return i.editReply('⏳ Ses sunucusu şu an bağlanıyor, 10 saniye sonra tekrar dene.');
 
-      const query = i.options.getString('şarkı');
-      const searchStr = /^https?:\/\//.test(query) ? query : 'ytsearch:' + query;
-      const res = await node.rest.resolve(searchStr);
+        const query = i.options.getString('şarkı');
+        const searchStr = /^https?:\/\//.test(query) ? query : 'ytsearch:' + query;
+        const res = await node.rest.resolve(searchStr);
 
-      let track = null;
-      if (res?.loadType === 'track') track = res.data;
-      else if (res?.loadType === 'search') track = res.data.at(0);
-      else if (res?.loadType === 'playlist') track = res.data.tracks.at(0);
+        let track = null;
+        if (res?.loadType === 'track') track = res.data;
+        else if (res?.loadType === 'search') track = res.data.at(0);
+        else if (res?.loadType === 'playlist') track = res.data.tracks.at(0);
 
-      if (!track) return i.editReply('❌ Aradığın şarkı bulunamadı!');
+        if (!track) return i.editReply('❌ Aradığın şarkı bulunamadı!');
 
-      let q = queues.get(i.guild.id);
-      if (!q) {
-        const player = await sh.joinVoiceChannel({ guildId: i.guild.id, channelId: vc.id, shardId: 0, deaf: true });
-        q = { player, songs: [] };
-        queues.set(i.guild.id, q);
-        player.on('end', () => {
-          q.songs.shift();
+        const sn = Math.floor((track.info.length || 0) / 1000);
+        const sure = sn > 0 ? `${Math.floor(sn / 60)}:${String(sn % 60).padStart(2, '0')}` : 'Canlı';
+        const songInfo = { title: track.info.title, url: track.info.uri, encoded: track.encoded, duration: sure, thumb: track.info.artworkUrl };
+
+        let q = queues.get(i.guild.id);
+        if (!q) {
+          const embed = new EmbedBuilder()
+            .setColor('#5865F2')
+            .setTitle('🎵 Ses Kanalında Çalınıyor')
+            .setDescription(`**[${songInfo.title}](${songInfo.url})**\n⏱️ Süre: \`${songInfo.duration}\` • İsteyen: <@${i.user.id}>`)
+            .setThumbnail(songInfo.thumb);
+          await i.editReply({ embeds: [embed] });
+
+          const player = await sh.joinVoiceChannel({ guildId: i.guild.id, channelId: vc.id, shardId: 0, deaf: true });
+          q = { player, songs: [songInfo] };
+          queues.set(i.guild.id, q);
+          player.on('end', () => {
+            q.songs.shift();
+            playNext(i.guild.id);
+          });
           playNext(i.guild.id);
-        });
-      }
-
-      const sn = Math.floor((track.info.length || 0) / 1000);
-      const sure = sn > 0 ? `${Math.floor(sn / 60)}:${String(sn % 60).padStart(2, '0')}` : 'Canlı';
-      const songInfo = { title: track.info.title, url: track.info.uri, encoded: track.encoded, duration: sure, thumb: track.info.artworkUrl };
-      q.songs.push(songInfo);
-
-      if (q.songs.length === 1) {
-        await playNext(i.guild.id);
-        const embed = new EmbedBuilder()
-          .setColor('#5865F2')
-          .setTitle('🎵 Ses Kanalında Çalınıyor')
-          .setDescription(`**[${songInfo.title}](${songInfo.url})**\n⏱️ Süre: \`${songInfo.duration}\` • İsteyen: <@${i.user.id}>`)
-          .setThumbnail(songInfo.thumb);
-        await i.editReply({ embeds: [embed] });
-      } else {
-        await i.editReply(`🎶 Sıraya eklendi (**#${q.songs.length}**): **${songInfo.title}**`);
+        } else {
+          q.songs.push(songInfo);
+          if (q.songs.length === 1) {
+            playNext(i.guild.id);
+            const embed = new EmbedBuilder()
+              .setColor('#5865F2')
+              .setTitle('🎵 Ses Kanalında Çalınıyor')
+              .setDescription(`**[${songInfo.title}](${songInfo.url})**\n⏱️ Süre: \`${songInfo.duration}\` • İsteyen: <@${i.user.id}>`)
+              .setThumbnail(songInfo.thumb);
+            await i.editReply({ embeds: [embed] });
+          } else {
+            await i.editReply(`🎶 Sıraya eklendi (**#${q.songs.length}**): **${songInfo.title}**`);
+          }
+        }
+      } catch (e) {
+        await i.editReply('❌ Hata oluştu: `' + e.message + '`').catch(() => {});
       }
     }
   },
