@@ -37,10 +37,10 @@ a{text-decoration:none;color:inherit}
 .card p{color:#9ca3af;font-size:.92rem}
 footer{text-align:center;padding:30px;border-top:1px solid #1b2030;color:#6b7280;margin-top:40px}
 </style>
-</head>
+<link rel="icon" type="image/png" href="/api/bot-avatar"></head>
 <body>
 <nav class="nav">
-  <div class="logo">⚡ Kreon Bot</div>
+  <div class="logo" style="display:flex;align-items:center;gap:10px"><img src="/api/bot-avatar" style="width:36px;height:36px;border-radius:50%;border:2px solid #5865F2;object-fit:cover"><span>Kreon Bot</span></div>
   <div style="display:flex;gap:10px">
     <a href="/dashboard" class="btn btn-secondary">🎛️ Kontrol Paneli</a>
     <a href="/invite" target="_blank" class="btn btn-primary">Discord'a Ekle</a>
@@ -107,3 +107,4 @@ fetch('/api/stats').then(r=>r.json()).then(d=>{document.getElementById('guild-co
 </script>
 </body>
 </html>
+

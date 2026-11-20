@@ -51,6 +51,7 @@ app.get('/invite', (req, res) => {
     res.redirect(`https://discord.com{id}&permissions=8&scope=bot%20applications.commands`);
 });
 
+app.get('/api/bot-avatar', async (req, res) => { try { const u = client.user?.displayAvatarURL({ size: 128, extension: 'png', forceStatic: true }); if (!u) return res.status(404).end(); const r = await fetch(u); res.setHeader('Content-Type', 'image/png'); res.send(Buffer.from(await r.arrayBuffer())); } catch { res.status(404).end(); } });
 app.get('/api/stats', (req, res) => {
     res.json({ guilds: client.guilds.cache.size, users: client.guilds.cache.reduce((a, g) => a + (g.memberCount || 0), 0), ping: client.ws.ping > 0 ? client.ws.ping : 24 });
 });
@@ -74,3 +75,4 @@ client.on(Events.InteractionCreate, async i => {
 });
 
 client.login(process.env.TOKEN);
+
