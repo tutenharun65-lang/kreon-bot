@@ -38,7 +38,7 @@ app.get('/dashboard', (req, res) => {
 app.get('/logout', (req, res) => { res.setHeader('Set-Cookie', 'kreon_admin=; Path=/; Max-Age=0'); res.redirect('/'); });
 app.get('/api/me', (req, res) => {
     if (!isAuth(req)) return res.status(401).json({ error: 'Giriş gerekli' });
-    const guilds = client.guilds.cache.map(g => ({ id: g.id, name: g.name, icon: g.icon, owner: true, botIn: true }));
+    const guilds = client.guilds.cache.map(g => ({ id: g.id, name: g.name, icon: g.iconURL({ size: 128, extension: 'png' }), owner: true, botIn: true }));
     res.json({ user: { id: client.user?.id || '0', username: 'Kreon Yönetici', avatar: client.user?.avatar || null }, guilds });
 });
 app.get('/api/guild/:id', async (req, res) => { const g = client.guilds.cache.get(req.params.id); if (!g) return res.status(404).json({ error: 'Yok' }); const channels = g.channels.cache.filter(c => c.type === ChannelType.GuildText).map(c => ({ id: c.id, name: c.name })); const roles = g.roles.cache.filter(r => !r.managed && r.id !== g.id).map(r => ({ id: r.id, name: r.name })); res.json({ settings: await getSettings(g.id), channels, roles }); });
@@ -55,4 +55,5 @@ for (const folder of fs.readdirSync(path.join(__dirname, 'commands'))) {
 client.once(Events.ClientReady, c => console.log(`✅ Kreon Bot aktif: ${c.user.tag}`));
 client.on(Events.InteractionCreate, async i => { if (!i.isChatInputCommand()) return; const c = client.commands.get(i.commandName); if (c) try { await c.execute(i); } catch (e) { console.error(e); } });
 client.login(process.env.TOKEN);
+
 
