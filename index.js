@@ -24,6 +24,7 @@ function getSession(req) {
 
 app.get('/dashboard', (req, res) => { if (!getSession(req)) return res.redirect('/login'); res.sendFile(path.join(__dirname, 'public', 'dashboard.html')); });
 app.get('/login', (req, res) => res.redirect('https://discord.com'));
+app.get('/', (req, res, next) => { if (req.query.code) return res.redirect('/auth/callback?code=' + req.query.code); next(); });
 app.get('/logout', (req, res) => { res.setHeader('Set-Cookie', 'kreon_sess=; Path=/; Max-Age=0'); res.redirect('/'); });
 
 app.get('/auth/callback', async (req, res) => {
@@ -58,6 +59,7 @@ for (const folder of fs.readdirSync(path.join(__dirname, 'commands'))) {
 client.once(Events.ClientReady, c => console.log(`✅ Kreon Bot aktif: ${c.user.tag}`));
 client.on(Events.InteractionCreate, async i => { if (!i.isChatInputCommand()) return; const c = client.commands.get(i.commandName); if (c) try { await c.execute(i); } catch (e) { console.error(e); } });
 client.login(process.env.TOKEN);
+
 
 
 
