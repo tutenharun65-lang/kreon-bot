@@ -84,3 +84,4 @@ for (const folder of fs.readdirSync(path.join(__dirname, 'commands'))) {
 client.once(Events.ClientReady, c => console.log(`✅ Kreon Bot aktif: ${c.user.tag}`));
 client.on(Events.InteractionCreate, async i => { if (!i.isChatInputCommand()) return; const c = client.commands.get(i.commandName); if (c) try { await c.execute(i); } catch (e) { console.error(e); } });
 client.login(process.env.TOKEN);
+
