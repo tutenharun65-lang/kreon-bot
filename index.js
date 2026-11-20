@@ -142,6 +142,17 @@ for (const folder of fs.readdirSync(path.join(__dirname, 'commands'))) {
 
 client.once(Events.ClientReady, c => console.log('? Kreon Bot aktif: ' + c.user.tag));
 client.on(Events.InteractionCreate, async i => {
+    if (i.isButton() && i.customId === 'open_ticket') {
+        const ch = await i.guild.channels.create({
+            name: 'ticket-' + i.user.username,
+            permissionOverwrites: [
+                { id: i.guild.id, deny: ['ViewChannel'] },
+                { id: i.user.id, allow: ['ViewChannel', 'SendMessages'] }
+            ]
+        });
+        await ch.send('?? Ho? geldin <@' + i.user.id + '>, yetkililerimiz en k?sa s?rede ilgilenecektir!');
+        return i.reply({ content: '? Destek kanal?n olu?turuldu: <#' + ch.id + '>', ephemeral: true });
+    }
     if (!i.isChatInputCommand()) return;
     const c = client.commands.get(i.commandName);
     if (c) try { await c.execute(i); } catch (e) { console.error(e); }
