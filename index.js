@@ -42,7 +42,6 @@ app.get('/sync-callback', async (req, res) => {
     res.redirect('/dashboard');
 });
 
-app.get('/sitemap.xml', (req, res) => { res.type('application/xml'); res.send(['<?xml version="1.0" encoding="UTF-8"?>','<urlset xmlns="http://sitemaps.org">','<url><loc>https://onrender.com</loc></url>','<url><loc>https://onrender.comdashboard</loc></url>','</urlset>'].join('')); });
 app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
 
 app.get('/api/me', async (req, res) => {
