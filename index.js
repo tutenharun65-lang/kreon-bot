@@ -24,6 +24,7 @@ function getSession(req) {
 app.get('/dashboard', (req, res) => { if (!getSession(req)) return res.redirect('/login'); res.sendFile(path.join(__dirname, 'public', 'dashboard.html')); });
 app.get('/login', (req, res) => res.redirect(`https://discord.com{clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=identify%20guilds`));
 app.get('/logout', (req, res) => { res.setHeader('Set-Cookie', 'kreon_sess=; Path=/; Max-Age=0'); res.redirect('/'); });
+
 app.get('/auth/callback', async (req, res) => {
     const code = req.query.code;
     if (!code || !process.env.CLIENT_SECRET) return res.redirect('/');
