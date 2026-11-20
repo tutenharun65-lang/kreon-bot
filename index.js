@@ -7,9 +7,9 @@ require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
-const clientId = (process.env.CLIENT_ID || '').replace(/\D/g, '');
+const getClientId = () => client.user?.id || (process.env.CLIENT_ID || '').replace(/\D/g, '') || '1569848116973277234';
 const redirectUri = 'https://onrender.com';
-const oauthUrl = 'https://discord.com' + ((process.env.CLIENT_ID || '').replace(/\D/g, '')) + '&response_type=code&redirect_uri=https%3A%2F%://onrender.com%2F&scope=identify+guilds';
+const getOauthUrl = () => 'https://discord.com' + getClientId() + '&response_type=code&redirect_uri=https%3A%2F%://onrender.com%2F&scope=identify+guilds';
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers] });
 connectDB();
@@ -30,7 +30,7 @@ app.get('/', async (req, res) => {
             const tokenRes = await fetch('https://discord.com', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({ client_id: clientId, client_secret: process.env.CLIENT_SECRET, grant_type: 'authorization_code', code, redirect_uri: redirectUri })
+                body: new URLSearchParams({ client_id: getClientId(), client_secret: process.env.CLIENT_SECRET, grant_type: 'authorization_code', code, redirect_uri: redirectUri })
             });
             const tokenData = await tokenRes.json();
             if (!tokenData.access_token) return res.send('Discord Giris Hatasi: ' + JSON.stringify(tokenData));
@@ -49,12 +49,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/dashboard', (req, res) => {
     if (!getSession(req)) {
-        return res.send(`<!DOCTYPE html><html><body style="background:#111218;color:#fff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px"><h2>⚡ Kreon Bot Kontrol Paneli</h2><p style="color:#9ca3af">Devam etmek için Discord hesabınızla giriş yapın.</p><a href="${oauthUrl}" style="background:#5865F2;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:16px">Discord ile Giriş Yap</a></body></html>`);
+        return res.send(`<!DOCTYPE html><html><body style="background:#111218;color:#fff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px"><h2>⚡ Kreon Bot Kontrol Paneli</h2><p style="color:#9ca3af">Devam etmek için Discord hesabınızla giriş yapın.</p><a href="${getOauthUrl()}" style="background:#5865F2;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:16px">Discord ile Giriş Yap</a></body></html>`);
     }
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
-app.get('/login', (req, res) => res.redirect(oauthUrl));
+app.get('/login', (req, res) => res.redirect(getOauthUrl()));
 app.get('/logout', (req, res) => { res.setHeader('Set-Cookie', 'kreon_sess=; Path=/; Max-Age=0'); res.redirect('/'); });
 app.get('/api/me', (req, res) => { const s = getSession(req); if (!s) return res.status(401).json({ error: 'Giriş gerekli' }); res.json({ user: s.user, guilds: s.guilds.map(g => ({ ...g, botIn: client.guilds.cache.has(g.id) })) }); });
 app.get('/api/guild/:id', async (req, res) => { const g = client.guilds.cache.get(req.params.id); if (!g) return res.status(404).json({ error: 'Yok' }); const channels = g.channels.cache.filter(c => c.type === ChannelType.GuildText).map(c => ({ id: c.id, name: c.name })); const roles = g.roles.cache.filter(r => !r.managed && r.id !== g.id).map(r => ({ id: r.id, name: r.name })); res.json({ settings: await getSettings(g.id), channels, roles }); });
@@ -71,4 +71,5 @@ for (const folder of fs.readdirSync(path.join(__dirname, 'commands'))) {
 client.once(Events.ClientReady, c => console.log(`✅ Kreon Bot aktif: ${c.user.tag}`));
 client.on(Events.InteractionCreate, async i => { if (!i.isChatInputCommand()) return; const c = client.commands.get(i.commandName); if (c) try { await c.execute(i); } catch (e) { console.error(e); } });
 client.login(process.env.TOKEN);
+
 
