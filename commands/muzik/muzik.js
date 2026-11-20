@@ -30,7 +30,7 @@ module.exports = [
         if (!node) return i.editReply('⏳ Ses sunucusu şu an bağlanıyor, 10 saniye sonra tekrar dene.');
 
         const query = i.options.getString('şarkı');
-        const searchStr = /^https?:\/\//.test(query) ? query : 'ytsearch:' + query;
+        const searchStr = /^https?:\/\//.test(query) ? query : 'scsearch:' + query;
         const res = await node.rest.resolve(searchStr);
 
         let track = null;
