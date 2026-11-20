@@ -22,7 +22,7 @@ function getSession(req) {
 }
 
 app.get('/dashboard', (req, res) => { if (!getSession(req)) return res.redirect('/login'); res.sendFile(path.join(__dirname, 'public', 'dashboard.html')); });
-app.get('/login', (req, res) => res.redirect(`https://discord.com{clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=identify%20guilds`));
+app.get('/login', (req, res) => { const id = (process.env.CLIENT_ID || '1569848116973277234').replace(/\D/g, '') || '1569848116973277234'; const u = 'https://discord.com' + id + '&redirect_uri=' + encodeURIComponent('https://onrender.com') + '&response_type=code&scope=identify%20guilds'; res.send('<script>location.href=' + JSON.stringify(u) + '</script>'); });
 app.get('/logout', (req, res) => { res.setHeader('Set-Cookie', 'kreon_sess=; Path=/; Max-Age=0'); res.redirect('/'); });
 
 app.get('/auth/callback', async (req, res) => {
@@ -57,5 +57,6 @@ for (const folder of fs.readdirSync(path.join(__dirname, 'commands'))) {
 client.once(Events.ClientReady, c => console.log(`✅ Kreon Bot aktif: ${c.user.tag}`));
 client.on(Events.InteractionCreate, async i => { if (!i.isChatInputCommand()) return; const c = client.commands.get(i.commandName); if (c) try { await c.execute(i); } catch (e) { console.error(e); } });
 client.login(process.env.TOKEN);
+
 
 
