@@ -1,0 +1,164 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kreon Bot - Hepsi Bir Arada Discord Botu</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+body{background:#0b0d14;color:#f3f4f6;line-height:1.6}
+a{text-decoration:none;color:inherit}
+.nav{display:flex;justify-content:space-between;align-items:center;padding:18px 8%;background:rgba(11,13,20,0.9);border-bottom:1px solid #1f2436;position:sticky;top:0;z-index:50;backdrop-filter:blur(10px)}
+.logo{font-size:1.5rem;font-weight:800;background:linear-gradient(90deg,#6366f1,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:24px;align-items:center;font-weight:500;color:#9ca3af}
+.btn{padding:11px 22px;border-radius:10px;font-weight:600;transition:.2s;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:none}
+.btn-primary{background:#5865F2;color:#fff}
+.btn-secondary{background:#1e2235;color:#fff;border:1px solid #2e3452}
+.hero{text-align:center;padding:80px 8% 50px;max-width:1100px;margin:auto}
+.badge{display:inline-block;padding:6px 14px;background:rgba(88,101,242,0.15);color:#818cf8;border:1px solid rgba(88,101,242,0.3);border-radius:99px;font-size:.85rem;font-weight:600;margin-bottom:18px}
+.hero h1{font-size:3rem;font-weight:800;line-height:1.15;margin-bottom:18px}
+.hero p{color:#9ca3af;font-size:1.15rem;max-width:680px;margin:0 auto 30px}
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:55px}
+.preview-box{background:#181a24;border:1px solid #262a3d;border-radius:16px;overflow:hidden;text-align:left;box-shadow:0 20px 50px rgba(0,0,0,0.5)}
+.tabs{display:flex;gap:8px;padding:14px 18px;background:#12141c;border-bottom:1px solid #262a3d;overflow-x:auto}
+.tab{padding:8px 16px;border-radius:8px;background:transparent;color:#9ca3af;font-weight:600;cursor:pointer;border:none;font-size:.9rem;white-space:nowrap}
+.tab.active{background:#5865F2;color:#fff}
+.chat-area{padding:24px;min-height:220px;background:#313338}
+.channel-title{color:#949ba4;font-weight:700;font-size:.95rem;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #3f4147}
+.msg{display:flex;gap:14px;margin-bottom:16px}
+.avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#5865F2,#a855f7);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.msg-head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.bot-tag{background:#5865F2;color:#fff;font-size:.7rem;padding:2px 6px;border-radius:4px;font-weight:700}
+.embed{background:#2b2d31;border-left:4px solid #5865F2;padding:12px 16px;border-radius:6px;margin-top:8px;max-width:480px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;max-width:1000px;margin:40px auto;padding:0 8%}
+.stat-card{background:#131622;border:1px solid #1f2436;padding:26px;border-radius:14px;text-align:center}
+.stat-num{font-size:2.2rem;font-weight:800;color:#818cf8}
+.section{padding:70px 8%;max-width:1200px;margin:auto}
+.section-title{text-align:center;font-size:2.2rem;font-weight:800;margin-bottom:12px}
+.section-sub{text-align:center;color:#9ca3af;margin-bottom:45px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px}
+.card{background:#131622;border:1px solid #1f2436;padding:26px;border-radius:14px}
+footer{text-align:center;padding:35px;border-top:1px solid #1f2436;color:#6b7280;margin-top:40px}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="logo">⚡ Kreon Bot</div><a href="/invite" target="_blank" class="btn btn-primary">Discord'a Ekle</a></nav>
+<section class="hero">
+  <span class="badge">✨ 7/24 Aktif • Yeni Nesil Discord Asistanı</span>
+  <h1>Sunucunuz için hepsi bir arada Discord botu</h1>
+  <p>Moderasyon, güvenlik, seviye, müzik, çekiliş, karşılama ve yapay zekâ sistemleri tek bir botta.</p>
+  <div class="hero-btns"><a href="/invite" target="_blank" class="btn btn-primary">🚀 Discord'a Ekle</a><a href="#ozellikler" class="btn btn-secondary">⚙️ Özellikleri Keşfet</a></div>
+  <div class="preview-box">
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('karsilama',this)">👋 Karşılama</button>
+      <button class="tab" onclick="showTab('seviye',this)">🏆 Seviye</button>
+      <button class="tab" onclick="showTab('muzik',this)">🎵 Müzik</button>
+      <button class="tab" onclick="showTab('cekilis',this)">🎉 Çekiliş</button>
+      <button class="tab" onclick="showTab('moderasyon',this)">🛡️ Moderasyon</button>
+      <button class="tab" onclick="showTab('guvenlik',this)">🔒 Güvenlik</button>
+    </div>
+    <div class="chat-area" id="chat-content"></div>
+  </div>
+</section>
+<section class="stats" id="istatistik">
+  <div class="stat-card"><div class="stat-num" id="guild-count">...</div><div>Aktif Sunucu</div></div>
+  <div class="stat-card"><div class="stat-num" id="user-count">...</div><div>Toplam Kullanıcı</div></div>
+  <div class="stat-card"><div class="stat-num" id="ping-count">...</div><div>Bot Gecikmesi</div></div>
+  <div class="stat-card"><div class="stat-num">%99.9</div><div>Kesintisiz Çalışma</div></div>
+</section>
+<section class="section" id="ozellikler">
+  <h2 class="section-title">Daha güvenli ve düzenli bir sunucu için her şey</h2>
+  <p class="section-sub">Kreon Bot ile sunucunuzu otomatik yönetin, üyelerinizi ödüllendirin.</p>
+  <div class="grid">
+    <div class="card"><h3>🛡️ Otomatik Moderasyon</h3><p>Küfür, reklam, link ve spam mesajlarını anında filtreleyin.</p></div>
+    <div class="card"><h3>🔒 Anti-Nuke & Güvenlik</h3><p>Yetkisiz kanal/rol silme ve şüpheli bot girişlerine karşı tam koruma.</p></div>
+    <div class="card"><h3>🏆 Seviye & Ekonomi</h3><p>Mesaj ve ses aktifliğine göre XP, günlük ödüller ve sıralama.</p></div>
+    <div class="card"><h3>🎵 Gelişmiş Müzik</h3><p>Ses kanallarında yüksek kalitede müzik dinleyin.</p></div>
+    <div class="card"><h3>👋 Karşılama & Otorol</h3><p>Yeni üyelere özel karşılama mesajları ve otomatik rol.</p></div>
+    <div class="card"><h3>🤖 Yapay Zekâ Sohbet</h3><p>Botu etiketleyerek sorularınızı anında yanıtlatın.</p></div>
+  </div>
+</section>
+<footer>© 2026 Kreon Bot • Tüm Hakları Saklıdır.</footer>
+<script>
+const previews = {
+  karsilama: `<div class="channel-title"># hoş-geldin</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>Aramıza hoş geldin <strong>@Deniz</strong>! Seninle birlikte <strong>1.250</strong> kişi olduk.</div><div class="embed"><strong>Otomatik Rol Verildi:</strong> @Üye</div></div></div>`,
+  seviye: `<div class="channel-title"># bot-komut</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>🎉 Tebrikler <strong>@Deniz</strong>, <strong>18. seviyeye</strong> ulaştın!</div><div class="embed"><strong>Sıra #3</strong> • Genel XP: 32.840 XP • Ödül Rol: @Aktif Üye</div></div></div>`,
+  muzik: `<div class="channel-title"># müzik-komut</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>🎵 Ses kanalında oynatılıyor:</div><div class="embed" style="border-color:#22c55e"><strong>ŞİMDİ ÇALIYOR:</strong> Pinhani - Dünyadan Uzak</div></div></div>`,
+  cekilis: `<div class="channel-title"># çekilişler</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>🎉 <strong>YENİ ÇEKİLİŞ BAŞLADI!</strong></div><div class="embed" style="border-color:#eab308"><strong>Ödül:</strong> 1 Aylık Discord Nitro • <strong>Katılımcı:</strong> 128</div></div></div>`,
+  moderasyon: `<div class="channel-title"># mod-log</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>⚠️ <strong>Otomatik Moderasyon İşlemi</strong></div><div class="embed" style="border-color:#ef4444"><strong>Kullanıcı:</strong> @user84 • <strong>Sebep:</strong> Reklam Filtresi</div></div></div>`,
+  guvenlik: `<div class="channel-title"># guard-log</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>🚨 <strong>Anti-Nuke Koruması Devrede!</strong></div><div class="embed" style="border-color:#ef4444">İzinsiz kanal silme limiti aşıldı, şüpheli yetkili yasaklandı.</div></div></div>`
+};
+function showTab(k,b){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));if(b)b.classList.add('active');document.getElementById('chat-content').innerHTML=previews[k]}
+showTab('karsilama');
+fetch('/api/stats').then(r=>r.json()).then(d=>{document.getElementById('guild-count').innerText=d.guilds;document.getElementById('user-count').innerText=d.users;document.getElementById('ping-count').innerText=d.ping+'ms'}).catch(()=>{});
+</script>
+</body>
+</html>
+<section class="stats" id="istatistik">
+  <div class="stat-card"><div class="stat-num" id="guild-count">...</div><div>Aktif Sunucu</div></div>
+  <div class="stat-card"><div class="stat-num" id="user-count">...</div><div>Toplam Kullanıcı</div></div>
+  <div class="stat-card"><div class="stat-num" id="ping-count">...</div><div>Bot Gecikmesi</div></div>
+  <div class="stat-card"><div class="stat-num">%99.9</div><div>Kesintisiz Çalışma</div></div>
+</section>
+<section class="section" id="ozellikler">
+  <h2 class="section-title">Daha güvenli ve düzenli bir sunucu için her şey</h2>
+  <p class="section-sub">Kreon Bot ile sunucunuzu otomatik yönetin, üyelerinizi ödüllendirin.</p>
+  <div class="grid">
+    <div class="card"><h3>🛡️ Otomatik Moderasyon</h3><p>Küfür, reklam, link ve spam mesajlarını anında filtreleyin.</p></div>
+    <div class="card"><h3>🔒 Anti-Nuke & Güvenlik</h3><p>Yetkisiz kanal/rol silme ve şüpheli bot girişlerine karşı tam koruma.</p></div>
+    <div class="card"><h3>🏆 Seviye & Ekonomi</h3><p>Mesaj ve ses aktifliğine göre XP, günlük ödüller ve sıralama.</p></div>
+    <div class="card"><h3>🎵 Gelişmiş Müzik</h3><p>Ses kanallarında yüksek kalitede müzik dinleyin.</p></div>
+    <div class="card"><h3>👋 Karşılama & Otorol</h3><p>Yeni üyelere özel karşılama mesajları ve otomatik rol.</p></div>
+    <div class="card"><h3>🤖 Yapay Zekâ Sohbet</h3><p>Botu etiketleyerek sorularınızı anında yanıtlatın.</p></div>
+  </div>
+</section>
+<footer>© 2026 Kreon Bot • Tüm Hakları Saklıdır.</footer>
+<script>
+const previews = {
+  karsilama: `<div class="channel-title"># hoş-geldin</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>Aramıza hoş geldin <strong>@Deniz</strong>! Seninle birlikte <strong>1.250</strong> kişi olduk.</div><div class="embed"><strong>Otomatik Rol Verildi:</strong> @Üye</div></div></div>`,
+  seviye: `<div class="channel-title"># bot-komut</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>🎉 Tebrikler <strong>@Deniz</strong>, <strong>18. seviyeye</strong> ulaştın!</div><div class="embed"><strong>Sıra #3</strong> • Genel XP: 32.840 XP • Ödül Rol: @Aktif Üye</div></div></div>`,
+  muzik: `<div class="channel-title"># müzik-komut</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>🎵 Ses kanalında oynatılıyor:</div><div class="embed" style="border-color:#22c55e"><strong>ŞİMDİ ÇALIYOR:</strong> Pinhani - Dünyadan Uzak</div></div></div>`,
+  cekilis: `<div class="channel-title"># çekilişler</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>🎉 <strong>YENİ ÇEKİLİŞ BAŞLADI!</strong></div><div class="embed" style="border-color:#eab308"><strong>Ödül:</strong> 1 Aylık Discord Nitro • <strong>Katılımcı:</strong> 128</div></div></div>`,
+  moderasyon: `<div class="channel-title"># mod-log</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>⚠️ <strong>Otomatik Moderasyon İşlemi</strong></div><div class="embed" style="border-color:#ef4444"><strong>Kullanıcı:</strong> @user84 • <strong>Sebep:</strong> Reklam Filtresi</div></div></div>`,
+  guvenlik: `<div class="channel-title"># guard-log</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>🚨 <strong>Anti-Nuke Koruması Devrede!</strong></div><div class="embed" style="border-color:#ef4444">İzinsiz kanal silme limiti aşıldı, şüpheli yetkili yasaklandı.</div></div></div>`
+};
+function showTab(k,b){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));if(b)b.classList.add('active');document.getElementById('chat-content').innerHTML=previews[k]}
+showTab('karsilama');
+fetch('/api/stats').then(r=>r.json()).then(d=>{document.getElementById('guild-count').innerText=d.guilds;document.getElementById('user-count').innerText=d.users;document.getElementById('ping-count').innerText=d.ping+'ms'}).catch(()=>{});
+</script>
+</body>
+</html>
+<section class="stats" id="istatistik">
+  <div class="stat-card"><div class="stat-num" id="guild-count">...</div><div>Aktif Sunucu</div></div>
+  <div class="stat-card"><div class="stat-num" id="user-count">...</div><div>Toplam Kullanıcı</div></div>
+  <div class="stat-card"><div class="stat-num" id="ping-count">...</div><div>Bot Gecikmesi</div></div>
+  <div class="stat-card"><div class="stat-num">%99.9</div><div>Kesintisiz Çalışma</div></div>
+</section>
+<section class="section" id="ozellikler">
+  <h2 class="section-title">Daha güvenli ve düzenli bir sunucu için her şey</h2>
+  <p class="section-sub">Kreon Bot ile sunucunuzu otomatik yönetin, üyelerinizi ödüllendirin.</p>
+  <div class="grid">
+    <div class="card"><h3>🛡️ Otomatik Moderasyon</h3><p>Küfür, reklam, link ve spam mesajlarını anında filtreleyin.</p></div>
+    <div class="card"><h3>🔒 Anti-Nuke & Güvenlik</h3><p>Yetkisiz kanal/rol silme ve şüpheli bot girişlerine karşı tam koruma.</p></div>
+    <div class="card"><h3>🏆 Seviye & Ekonomi</h3><p>Mesaj ve ses aktifliğine göre XP, günlük ödüller ve sıralama.</p></div>
+    <div class="card"><h3>🎵 Gelişmiş Müzik</h3><p>Ses kanallarında yüksek kalitede müzik dinleyin.</p></div>
+    <div class="card"><h3>👋 Karşılama & Otorol</h3><p>Yeni üyelere özel karşılama mesajları ve otomatik rol.</p></div>
+    <div class="card"><h3>🤖 Yapay Zekâ Sohbet</h3><p>Botu etiketleyerek sorularınızı anında yanıtlatın.</p></div>
+  </div>
+</section>
+<footer>© 2026 Kreon Bot • Tüm Hakları Saklıdır.</footer>
+<script>
+const previews = {
+  karsilama: `<div class="channel-title"># hoş-geldin</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>Aramıza hoş geldin <strong>@Deniz</strong>! Seninle birlikte <strong>1.250</strong> kişi olduk.</div><div class="embed"><strong>Otomatik Rol Verildi:</strong> @Üye</div></div></div>`,
+  seviye: `<div class="channel-title"># bot-komut</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>🎉 Tebrikler <strong>@Deniz</strong>, <strong>18. seviyeye</strong> ulaştın!</div><div class="embed"><strong>Sıra #3</strong> • Genel XP: 32.840 XP • Ödül Rol: @Aktif Üye</div></div></div>`,
+  muzik: `<div class="channel-title"># müzik-komut</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>🎵 Ses kanalında oynatılıyor:</div><div class="embed" style="border-color:#22c55e"><strong>ŞİMDİ ÇALIYOR:</strong> Pinhani - Dünyadan Uzak</div></div></div>`,
+  cekilis: `<div class="channel-title"># çekilişler</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>🎉 <strong>YENİ ÇEKİLİŞ BAŞLADI!</strong></div><div class="embed" style="border-color:#eab308"><strong>Ödül:</strong> 1 Aylık Discord Nitro • <strong>Katılımcı:</strong> 128</div></div></div>`,
+  moderasyon: `<div class="channel-title"># mod-log</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>⚠️ <strong>Otomatik Moderasyon İşlemi</strong></div><div class="embed" style="border-color:#ef4444"><strong>Kullanıcı:</strong> @user84 • <strong>Sebep:</strong> Reklam Filtresi</div></div></div>`,
+  guvenlik: `<div class="channel-title"># guard-log</div><div class="msg"><div class="avatar">K</div><div><div class="msg-head"><strong>Kreon Bot</strong><span class="bot-tag">UYG</span></div><div>🚨 <strong>Anti-Nuke Koruması Devrede!</strong></div><div class="embed" style="border-color:#ef4444">İzinsiz kanal silme limiti aşıldı, şüpheli yetkili yasaklandı.</div></div></div>`
+};
+function showTab(k,b){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));if(b)b.classList.add('active');document.getElementById('chat-content').innerHTML=previews[k]}
+showTab('karsilama');
+fetch('/api/stats').then(r=>r.json()).then(d=>{document.getElementById('guild-count').innerText=d.guilds;document.getElementById('user-count').innerText=d.users;document.getElementById('ping-count').innerText=d.ping+'ms'}).catch(()=>{});
+</script>
+</body>
+</html>
