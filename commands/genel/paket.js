@@ -7,7 +7,7 @@ module.exports = [
       const embed = new EmbedBuilder()
         .setColor('#5865F2')
         .setTitle('⚡ Kreon Bot • Komut Menüsü')
-        .setDescription('Sunucunuzu tek yerden yönetin!\n\n🛡️ **Moderasyon:** `/ban`, `/temizle`, `/kilitle`\n📊 **Sistemler:** `/rank`, `/yardım`\n🌐 **Web Paneli:** https://onrender.com');
+        .setDescription('Sunucunuzu tek yerden y?netin!\n\n??? **Moderasyon:** `/ban`, `/kick`, `/temizle`, `/kilitle`, `/ticket-kur`\n?? **Ekonomi:** `/bakiye`, `/g?nl?k`, `/?al??`, `/g?nder`\n?? **Genel & E?lence:** `/rank`, `/avatar`, `/sunucu-bilgi`, `/ship`, `/istatistik`\n?? **Web Sitesi:** https://kreon-bot.onrender.com/');
       await i.reply({ embeds: [embed] });
     }
   },
