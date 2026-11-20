@@ -12,6 +12,8 @@ const client = new Client({ intents:[GatewayIntentBits.Guilds,GatewayIntentBits.
 
 connectDB();
 registerSystems(client);
+const { initLavalink } = require('./lavalink');
+initLavalink(client);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
