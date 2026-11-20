@@ -116,7 +116,7 @@ async function init() {
       const iconHtml = g.hasIcon
         ? '<img src="/api/icon/' + g.id + '" onerror="this.remove();this.parentNode.innerText=\'' + firstLetter + '\'">'
         : firstLetter;
-      return '<div class="server-row"><div class="server-left"><div class="s-icon">' + iconHtml + '</div><div><strong>' + g.name + '</strong><div class="s-role">Owner</div></div></div><button class="btn btn-purple" onclick="selectGuild(\'' + g.id + '\')">Yönet</button></div>';
+      return '<div class="server-row"><div class="server-left"><div class="s-icon">' + iconHtml + '</div><div><strong>' + g.name + '</strong><div class="s-role">Owner</div></div></div><div style="display:flex;gap:8px"><button class="btn btn-purple" onclick="selectGuild(\'' + g.id + '\')">Yönet</button><a href="/invite?guild_id=' + g.id + '" target="_blank" class="btn btn-dark">Davet et</a></div></div>';
     }).join('');
     document.getElementById('guild-dropdown').innerHTML = data.guilds.map(function(g) {
       return '<option value="' + g.id + '">' + g.name + '</option>';
