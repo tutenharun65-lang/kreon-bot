@@ -1,4 +1,3 @@
-process.env.FFMPEG_PATH = require('@ffmpeg-installer/ffmpeg').path;
 const fs = require('node:fs');
 const path = require('node:path');
 const express = require('express');
@@ -87,6 +86,14 @@ client.once(Events.ClientReady, async c => {
 
 client.on(Events.InteractionCreate, async i => {
     try {
+        if (i.isButton() && i.customId === 'join_giveaway') {
+            const { giveaways } = require('./commands/ai/ai_cekilis');
+            const gw = giveaways && giveaways.get(i.message.id);
+            if (!gw) return await i.reply({ content: '? Bu ?ekili? sona ermi?.', ephemeral: true });
+            if (gw.users.has(i.user.id)) return await i.reply({ content: '? Bu ?ekili?e zaten kat?ld?n!', ephemeral: true });
+            gw.users.add(i.user.id);
+            return await i.reply({ content: '?? ?ekili?e ba?ar?yla kat?ld?n! (Toplam kat?l?mc?: **' + gw.users.size + '**)', ephemeral: true });
+        }
         if (i.isButton() && i.customId === 'open_ticket') {
             const ch = await i.guild.channels.create({
                 name: 'ticket-' + i.user.username,
