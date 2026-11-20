@@ -38,12 +38,13 @@ app.get('/dashboard', (req, res) => {
 app.get('/logout', (req, res) => { res.setHeader('Set-Cookie', 'kreon_admin=; Path=/; Max-Age=0'); res.redirect('/'); });
 app.get('/api/me', (req, res) => {
     if (!isAuth(req)) return res.status(401).json({ error: 'Giriş gerekli' });
-    const guilds = client.guilds.cache.map(g => ({ id: g.id, name: g.name, icon: g.iconURL({ size: 128, extension: 'png' }), owner: true, botIn: true }));
+    const guilds = client.guilds.cache.map(g => ({ id: g.id, name: g.name, icon: g.icon ? '/api/icon/' + g.id : null, owner: true, botIn: true }));
     res.json({ user: { id: client.user?.id || '0', username: 'Kreon Yönetici', avatar: client.user?.avatar || null }, guilds });
 });
 app.get('/api/guild/:id', async (req, res) => { const g = client.guilds.cache.get(req.params.id); if (!g) return res.status(404).json({ error: 'Yok' }); const channels = g.channels.cache.filter(c => c.type === ChannelType.GuildText).map(c => ({ id: c.id, name: c.name })); const roles = g.roles.cache.filter(r => !r.managed && r.id !== g.id).map(r => ({ id: r.id, name: r.name })); res.json({ settings: await getSettings(g.id), channels, roles }); });
 app.post('/api/guild/:id', async (req, res) => { await saveSettings(req.params.id, req.body); res.json({ ok: true }); });
 app.get('/invite', (req, res) => res.redirect(`https://discord.com{client.user?.id || '1569848116973277234'}&permissions=8&scope=bot%20applications.commands${req.query.guild_id ? '&guild_id=' + req.query.guild_id : ''}`));
+app.get('/api/icon/:id', async (req, res) => { const g = client.guilds.cache.get(req.params.id); const u = g?.iconURL({ size: 128, extension: 'png' }); if (!u) return res.status(404).end(); const r = await fetch(u); res.setHeader('Content-Type', 'image/png'); res.send(Buffer.from(await r.arrayBuffer())); });
 app.get('/api/stats', (req, res) => res.json({ guilds: client.guilds.cache.size, users: client.guilds.cache.reduce((a, g) => a + (g.memberCount || 0), 0), ping: client.ws.ping > 0 ? client.ws.ping : 24 }));
 app.listen(port, () => console.log(`🌐 Site ve Kontrol Paneli ${port} portunda aktif.`));
 
@@ -55,5 +56,6 @@ for (const folder of fs.readdirSync(path.join(__dirname, 'commands'))) {
 client.once(Events.ClientReady, c => console.log(`✅ Kreon Bot aktif: ${c.user.tag}`));
 client.on(Events.InteractionCreate, async i => { if (!i.isChatInputCommand()) return; const c = client.commands.get(i.commandName); if (c) try { await c.execute(i); } catch (e) { console.error(e); } });
 client.login(process.env.TOKEN);
+
 
 
