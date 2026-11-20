@@ -1,5 +1,6 @@
 ﻿const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus, entersState, getVoiceConnection } = require('@discordjs/voice');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus, entersState, getVoiceConnection, NoSubscriberBehavior } = require('@discordjs/voice');
+const { Readable } = require('node:stream');
 
 const queues = new Map();
 
@@ -7,7 +8,7 @@ async function searchTrack(query) {
   try {
     const dz = await fetch('https://deezer.com' + encodeURIComponent(query));
     const dzData = await dz.json();
-    const item = dzData.data && dzData.data.at(0)[0];
+    const item = dzData.data && dzData.data.at(0);
     if (item && item.preview) {
       return {
         title: `${item.artist.name} - ${item.title}`,
@@ -21,7 +22,7 @@ async function searchTrack(query) {
 
   const au = await fetch('https://audius.co' + encodeURIComponent(query) + '&app_name=KreonBot');
   const auData = await au.json();
-  const tr = auData.data && auData.data.at(0)[0];
+  const tr = auData.data && auData.data.at(0);
   if (tr) {
     const sn = tr.duration || 0;
     return {
@@ -35,16 +36,24 @@ async function searchTrack(query) {
   return null;
 }
 
-function playNext(guildId) {
+async function playNext(guildId) {
   const q = queues.get(guildId);
   if (!q || q.songs.length === 0) {
     if (q && q.conn) q.conn.destroy();
     queues.delete(guildId);
     return;
   }
-  const song = q.songs[0];
-  const resource = createAudioResource(song.streamUrl);
-  q.player.play(resource);
+  const song = q.songs.at(0);
+  try {
+    const audioRes = await fetch(song.streamUrl);
+    const nodeStream = Readable.fromWeb(audioRes.body);
+    const resource = createAudioResource(nodeStream);
+    q.player.play(resource);
+  } catch (e) {
+    console.error('Akış hatası:', e);
+    q.songs.shift();
+    playNext(guildId);
+  }
 }
 
 module.exports = [
@@ -59,9 +68,13 @@ module.exports = [
       await i.deferReply();
 
       try {
+        const query = i.options.getString('şarkı');
+        const songInfo = await searchTrack(query);
+        if (!songInfo) return i.editReply('❌ Aradığın şarkı bulunamadı!');
+
         let q = queues.get(i.guild.id);
         if (!q) {
-          const player = createAudioPlayer();
+          const player = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
           const conn = joinVoiceChannel({
             channelId: vc.id,
             guildId: i.guild.id,
@@ -77,19 +90,15 @@ module.exports = [
             playNext(i.guild.id);
           });
           player.on('error', err => {
-            console.error('Ses çalar hatası:', err);
+            console.error('Player hatası:', err);
             q.songs.shift();
             playNext(i.guild.id);
           });
         }
 
-        const query = i.options.getString('şarkı');
-        const songInfo = await searchTrack(query);
-        if (!songInfo) return i.editReply('❌ Aradığın şarkı bulunamadı!');
-
         q.songs.push(songInfo);
         if (q.songs.length === 1) {
-          playNext(i.guild.id);
+          await playNext(i.guild.id);
           const embed = new EmbedBuilder()
             .setColor('#5865F2')
             .setTitle('🎵 Ses Kanalında Çalınıyor')
@@ -100,7 +109,7 @@ module.exports = [
           await i.editReply(`🎶 Sıraya eklendi (**#${q.songs.length}**): **${songInfo.title}**`);
         }
       } catch (e) {
-        await i.editReply('❌ Bağlantı hatası: `' + e.message + '`');
+        await i.editReply('❌ Ses hatası: `' + e.message + '`');
       }
     }
   },
