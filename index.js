@@ -1,8 +1,8 @@
-﻿const fs = require('node:fs');
+const fs = require('node:fs');
 const path = require('node:path');
 const express = require('express');
 const { Client, Collection, Events, GatewayIntentBits, ChannelType } = require('discord.js');
-const { connectDB, getSettings, saveSettings, registerSystems } = require('./systems'); const mongoose = require('mongoose'); const SavedGuild = mongoose.models.SavedGuild || mongoose.model('SavedGuild', new mongoose.Schema({ guildId: String, name: String }));
+const { connectDB, getSettings, saveSettings, registerSystems } = require('./systems');
 require('dotenv').config();
 
 const app = express();
@@ -15,68 +15,13 @@ registerSystems(client);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-function getUserToken(req) {
-    const c = (req.headers.cookie || '').split(';').find(x => x.trim().startsWith('k_tok='));
-    return c ? c.trim().substring(6) : null;
-}
-
-app.get('/sync-servers', (req, res) => {
-    const u = 'https://discord.com' + clientId + '&response_type=code&redirect_uri=' + encodeURIComponent('https://onrender.com') + '&scope=guilds';
-    res.redirect(u);
-});
-
-app.get('/sync-callback', async (req, res) => {
-    const code = req.query.code;
-    if (!code) return res.redirect('/dashboard');
-    try {
-        const tr = await fetch('https://discord.com', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ client_id: clientId, client_secret: (process.env.CLIENT_SECRET || '').trim(), grant_type: 'authorization_code', code, redirect_uri: 'https://onrender.com' })
-        });
-        const td = await tr.json();
-        if (td.access_token) {
-            res.setHeader('Set-Cookie', 'k_tok=' + td.access_token + '; Path=/; HttpOnly; Max-Age=604800');
-        }
-    } catch {}
-    res.redirect('/dashboard');
-});
-
 app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
 
 app.get('/api/me', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     await client.guilds.fetch().catch(() => {});
-    const botGuilds = new Map();
-    client.guilds.cache.forEach(g => {
-        botGuilds.set(g.id, { id: g.id, name: g.name, hasIcon: Boolean(g.icon), iconUrl: g.icon ? '/api/icon/' + g.id : null, botIn: true, owner: true });
-    });
-
-    const tok = getUserToken(req);
-    if (tok) {
-        try {
-            const ur = await fetch('https://discord.com', { headers: { Authorization: 'Bearer ' + tok } });
-            const list = await ur.json();
-            if (Array.isArray(list)) {
-                list.forEach(g => {
-                    const isAdmin = g.owner || (BigInt(g.permissions || 0) & 0x20n) === 0x20n || (BigInt(g.permissions || 0) & 0x8n) === 0x8n;
-                    if (isAdmin && !botGuilds.has(g.id)) {
-                        botGuilds.set(g.id, {
-                            id: g.id,
-                            name: g.name,
-                            hasIcon: Boolean(g.icon),
-                            iconUrl: g.icon ? '/api/ext-icon/' + g.id + '/' + g.icon : null,
-                            botIn: false,
-                            owner: Boolean(g.owner)
-                        });
-                    }
-                });
-            }
-        } catch {}
-    }
-
-    const sorted = Array.from(botGuilds.values()).sort((a, b) => Number(b.botIn) - Number(a.botIn));
-    res.json({ guilds: sorted, synced: Boolean(tok) });
+    const guilds = client.guilds.cache.map(g => ({ id: g.id, name: g.name, iconUrl: g.icon ? '/api/icon/' + g.id : null, botIn: true, owner: true }));
+    res.json({ guilds });
 });
 
 app.get('/api/icon/:id', async (req, res) => {
@@ -85,15 +30,6 @@ app.get('/api/icon/:id', async (req, res) => {
         const url = g?.iconURL({ size: 128, extension: 'png', forceStatic: true });
         if (!url) return res.status(404).end();
         const r = await fetch(url);
-        res.setHeader('Content-Type', 'image/png');
-        res.send(Buffer.from(await r.arrayBuffer()));
-    } catch { res.status(404).end(); }
-});
-
-app.get('/api/ext-icon/:id/:hash', async (req, res) => {
-    try {
-        const r = await fetch('https://discordapp.com' + req.params.id + '/' + req.params.hash + '.png?size=128');
-        if (!r.ok) return res.status(404).end();
         res.setHeader('Content-Type', 'image/png');
         res.send(Buffer.from(await r.arrayBuffer()));
     } catch { res.status(404).end(); }
@@ -117,45 +53,58 @@ app.get('/api/guild/:id', async (req, res) => {
     res.json({ settings: await getSettings(g.id), channels, roles });
 });
 
-app.post('/api/add-guild', async (req, res) => { const { name, guildId } = req.body; if (!name) return res.status(400).end(); const id = (guildId || '').replace(/\D/g, '') || ('manual_' + Date.now()); if (mongoose.connection.readyState === 1) await SavedGuild.findOneAndUpdate({ guildId: id }, { guildId: id, name }, { upsert: true }); res.json({ ok: true }); });
 app.post('/api/guild/:id', async (req, res) => {
     await saveSettings(req.params.id, req.body);
     res.json({ ok: true });
 });
 
-app.get('/invite', (req, res) => { const g = /^\d+$/.test(req.query.guild_id || '') ? '&guild_id=' + req.query.guild_id : ''; res.redirect('https://discord.com' + g); });
-
 app.get('/api/stats', (req, res) => {
     res.json({ guilds: client.guilds.cache.size, users: client.guilds.cache.reduce((a, g) => a + (g.memberCount || 0), 0), ping: client.ws.ping > 0 ? client.ws.ping : 24 });
 });
 
-app.listen(port, () => console.log('?? Site ve Kontrol Paneli ' + port + ' portunda aktif.'));
-
+app.listen(port, () => console.log('🌐 Site ve Kontrol Paneli ' + port + ' portunda aktif.'));
 client.commands = new Collection();
+const slashData = [];
 for (const folder of fs.readdirSync(path.join(__dirname, 'commands'))) {
     const p = path.join(__dirname, 'commands', folder);
     for (const file of fs.readdirSync(p).filter(f => f.endsWith('.js'))) {
-        const c = require(path.join(p, file));
-        if ('data' in c && 'execute' in c) client.commands.set(c.data.name, c);
+        const mod = require(path.join(p, file));
+        const list = Array.isArray(mod) ? mod : [mod];
+        for (const c of list) {
+            if (c && c.data && c.execute) {
+                client.commands.set(c.data.name, c);
+                slashData.push(c.data.toJSON());
+            }
+        }
     }
 }
 
-client.once(Events.ClientReady, c => console.log('? Kreon Bot aktif: ' + c.user.tag));
+client.once(Events.ClientReady, async c => {
+    console.log('✅ Kreon Bot aktif: ' + c.user.tag + ' | Yüklü komut: ' + client.commands.size);
+    try { await c.application.commands.set(slashData); } catch (e) { console.error(e); }
+});
+
 client.on(Events.InteractionCreate, async i => {
-    if (i.isButton() && i.customId === 'open_ticket') {
-        const ch = await i.guild.channels.create({
-            name: 'ticket-' + i.user.username,
-            permissionOverwrites: [
-                { id: i.guild.id, deny: ['ViewChannel'] },
-                { id: i.user.id, allow: ['ViewChannel', 'SendMessages'] }
-            ]
-        });
-        await ch.send('?? Ho? geldin <@' + i.user.id + '>, yetkililerimiz en k?sa s?rede ilgilenecektir!');
-        return i.reply({ content: '? Destek kanal?n olu?turuldu: <#' + ch.id + '>', ephemeral: true });
+    try {
+        if (i.isButton() && i.customId === 'open_ticket') {
+            const ch = await i.guild.channels.create({
+                name: 'ticket-' + i.user.username,
+                permissionOverwrites: [
+                    { id: i.guild.id, deny: ['ViewChannel'] },
+                    { id: i.user.id, allow: ['ViewChannel', 'SendMessages'] }
+                ]
+            });
+            await ch.send('🎫 Hoş geldin <@' + i.user.id + '>, yetkililerimiz en kısa sürede ilgilenecektir!');
+            return await i.reply({ content: '✅ Destek kanalın oluşturuldu: <#' + ch.id + '>', ephemeral: true });
+        }
+        if (!i.isChatInputCommand()) return;
+        const cmd = client.commands.get(i.commandName);
+        if (!cmd) return await i.reply({ content: '⚠️ Komut bulunamadı.', ephemeral: true });
+        await cmd.execute(i);
+    } catch (e) {
+        console.error('Komut hatası:', e);
+        if (!i.replied && !i.deferred) await i.reply({ content: '❌ Hata: ' + e.message, ephemeral: true }).catch(() => {});
     }
-    if (!i.isChatInputCommand()) return;
-    const c = client.commands.get(i.commandName);
-    if (c) try { await c.execute(i); } catch (e) { console.error(e); }
 });
 
 client.login(process.env.TOKEN);
