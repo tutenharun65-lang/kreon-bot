@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const express = require('express');
 const { Client, Collection, Events, GatewayIntentBits, ChannelType } = require('discord.js');
-const { connectDB, getSettings, saveSettings, registerSystems } = require('./systems');
+const { connectDB, getSettings, saveSettings, registerSystems } = require('./systems'); const mongoose = require('mongoose'); const SavedGuild = mongoose.models.SavedGuild || mongoose.model('SavedGuild', new mongoose.Schema({ guildId: String, name: String }));
 require('dotenv').config();
 
 const app = express();
@@ -52,7 +52,7 @@ app.get('/api/me', async (req, res) => {
         botGuilds.set(g.id, { id: g.id, name: g.name, hasIcon: Boolean(g.icon), iconUrl: g.icon ? '/api/icon/' + g.id : null, botIn: true, owner: true });
     });
 
-    const tok = getUserToken(req);
+    const saved = mongoose.connection.readyState === 1 ? await SavedGuild.find().lean() : []; saved.forEach(sg => { if (!botGuilds.has(sg.guildId)) botGuilds.set(sg.guildId, { id: sg.guildId, name: sg.name, iconUrl: null, botIn: false, owner: true }); }); const tok = getUserToken(req);
     if (tok) {
         try {
             const ur = await fetch('https://discord.com', { headers: { Authorization: 'Bearer ' + tok } });
@@ -117,6 +117,7 @@ app.get('/api/guild/:id', async (req, res) => {
     res.json({ settings: await getSettings(g.id), channels, roles });
 });
 
+app.post('/api/add-guild', async (req, res) => { const { name, guildId } = req.body; if (!name) return res.status(400).end(); const id = (guildId || '').replace(/\D/g, '') || ('manual_' + Date.now()); if (mongoose.connection.readyState === 1) await SavedGuild.findOneAndUpdate({ guildId: id }, { guildId: id, name }, { upsert: true }); res.json({ ok: true }); });
 app.post('/api/guild/:id', async (req, res) => {
     await saveSettings(req.params.id, req.body);
     res.json({ ok: true });
