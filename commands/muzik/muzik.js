@@ -1,27 +1,50 @@
 ﻿const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus, entersState, getVoiceConnection, StreamType } = require('@discordjs/voice');
-const scdl = require('soundcloud-downloader').default;
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus, entersState, getVoiceConnection } = require('@discordjs/voice');
 
 const queues = new Map();
 
-async function playNext(guildId) {
+async function searchTrack(query) {
+  try {
+    const dz = await fetch('https://deezer.com' + encodeURIComponent(query));
+    const dzData = await dz.json();
+    const item = dzData.data && dzData.data[0];
+    if (item && item.preview) {
+      return {
+        title: `${item.artist.name} - ${item.title}`,
+        url: item.link,
+        streamUrl: item.preview,
+        duration: '0:30 (Önizleme)',
+        thumb: item.album?.cover_medium || null
+      };
+    }
+  } catch {}
+
+  const au = await fetch('https://audius.co' + encodeURIComponent(query) + '&app_name=KreonBot');
+  const auData = await au.json();
+  const tr = auData.data && auData.data[0];
+  if (tr) {
+    const sn = tr.duration || 0;
+    return {
+      title: tr.title,
+      url: 'https://audius.co' + tr.permalink,
+      streamUrl: `https://audius.co{tr.id}/stream?app_name=KreonBot`,
+      duration: `${Math.floor(sn / 60)}:${String(sn % 60).padStart(2, '0')}`,
+      thumb: tr.artwork?.['480x480'] || null
+    };
+  }
+  return null;
+}
+
+function playNext(guildId) {
   const q = queues.get(guildId);
   if (!q || q.songs.length === 0) {
     if (q && q.conn) q.conn.destroy();
     queues.delete(guildId);
     return;
   }
-  const song = q.songs.at(0);
-  try {
-    const stream = await scdl.download(song.url);
-    const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary });
-    q.player.play(resource);
-  } catch (e) {
-    console.error('Ses akış hatası:', e);
-    if (q.textChannel) q.textChannel.send('⚠️ Şarkı akışı başlatılamadı: `' + e.message + '`').catch(() => {});
-    q.songs.shift();
-    playNext(guildId);
-  }
+  const song = q.songs[0];
+  const resource = createAudioResource(song.streamUrl);
+  q.player.play(resource);
 }
 
 module.exports = [
@@ -29,49 +52,44 @@ module.exports = [
     data: new SlashCommandBuilder()
       .setName('oynat')
       .setDescription('Ses kanalına girer ve istediğiniz şarkıyı çalar.')
-      .addStringOption(o => o.setName('şarkı').setDescription('Şarkı adı veya SoundCloud linki').setRequired(true)),
+      .addStringOption(o => o.setName('şarkı').setDescription('Şarkı adı').setRequired(true)),
     async execute(i) {
       const vc = i.member.voice?.channel;
       if (!vc) return i.reply({ content: '🔊 Önce bir **ses kanalına** girmelisin!', ephemeral: true });
       await i.deferReply();
 
       try {
-        const query = i.options.getString('şarkı');
-        let track;
-        if (scdl.isValidUrl(query)) {
-          track = await scdl.getInfo(query);
-        } else {
-          const res = await scdl.search({ query, resourceType: 'tracks', limit: 1 });
-          track = res.collection?.at(0);
-        }
-        if (!track) return i.editReply('❌ Aradığın şarkı bulunamadı!');
-
         let q = queues.get(i.guild.id);
         if (!q) {
           const player = createAudioPlayer();
-          const conn = joinVoiceChannel({ channelId: vc.id, guildId: i.guild.id, adapterCreator: i.guild.voiceAdapterCreator, selfDeaf: true });
+          const conn = joinVoiceChannel({
+            channelId: vc.id,
+            guildId: i.guild.id,
+            adapterCreator: i.guild.voiceAdapterCreator,
+            selfDeaf: true
+          });
           await entersState(conn, VoiceConnectionStatus.Ready, 15000);
           conn.subscribe(player);
-          q = { conn, player, songs: [], textChannel: i.channel };
+          q = { conn, player, songs: [] };
           queues.set(i.guild.id, q);
           player.on(AudioPlayerStatus.Idle, () => {
             q.songs.shift();
             playNext(i.guild.id);
           });
           player.on('error', err => {
-            console.error('Player hatası:', err);
+            console.error('Ses çalar hatası:', err);
             q.songs.shift();
             playNext(i.guild.id);
           });
         }
 
-        const sn = Math.floor((track.duration || 0) / 1000);
-        const sure = sn > 0 ? `${Math.floor(sn / 60)}:${String(sn % 60).padStart(2, '0')}` : 'Canlı';
-        const songInfo = { title: track.title, url: track.permalink_url, duration: sure, thumb: track.artwork_url };
-        q.songs.push(songInfo);
+        const query = i.options.getString('şarkı');
+        const songInfo = await searchTrack(query);
+        if (!songInfo) return i.editReply('❌ Aradığın şarkı bulunamadı!');
 
+        q.songs.push(songInfo);
         if (q.songs.length === 1) {
-          await playNext(i.guild.id);
+          playNext(i.guild.id);
           const embed = new EmbedBuilder()
             .setColor('#5865F2')
             .setTitle('🎵 Ses Kanalında Çalınıyor')
@@ -82,7 +100,7 @@ module.exports = [
           await i.editReply(`🎶 Sıraya eklendi (**#${q.songs.length}**): **${songInfo.title}**`);
         }
       } catch (e) {
-        await i.editReply('❌ Hata oluştu: `' + e.message + '`');
+        await i.editReply('❌ Bağlantı hatası: `' + e.message + '`');
       }
     }
   },
