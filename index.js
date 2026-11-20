@@ -7,9 +7,9 @@ require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
-const clientId = '1569848116973277234';
+const clientId = (process.env.CLIENT_ID || '').replace(/\D/g, '');
 const redirectUri = 'https://onrender.com';
-const oauthUrl = 'https://discord.com';
+const oauthUrl = 'https://discord.com' + ((process.env.CLIENT_ID || '').replace(/\D/g, '')) + '&response_type=code&redirect_uri=https%3A%2F%://onrender.com%2F&scope=identify+guilds';
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers] });
 connectDB();
@@ -71,3 +71,4 @@ for (const folder of fs.readdirSync(path.join(__dirname, 'commands'))) {
 client.once(Events.ClientReady, c => console.log(`✅ Kreon Bot aktif: ${c.user.tag}`));
 client.on(Events.InteractionCreate, async i => { if (!i.isChatInputCommand()) return; const c = client.commands.get(i.commandName); if (c) try { await c.execute(i); } catch (e) { console.error(e); } });
 client.login(process.env.TOKEN);
+
