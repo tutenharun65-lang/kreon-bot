@@ -7,7 +7,7 @@ async function searchTrack(query) {
   try {
     const dz = await fetch('https://deezer.com' + encodeURIComponent(query));
     const dzData = await dz.json();
-    const item = dzData.data && dzData.data[0];
+    const item = dzData.data && dzData.data.at(0)[0];
     if (item && item.preview) {
       return {
         title: `${item.artist.name} - ${item.title}`,
@@ -21,7 +21,7 @@ async function searchTrack(query) {
 
   const au = await fetch('https://audius.co' + encodeURIComponent(query) + '&app_name=KreonBot');
   const auData = await au.json();
-  const tr = auData.data && auData.data[0];
+  const tr = auData.data && auData.data.at(0)[0];
   if (tr) {
     const sn = tr.duration || 0;
     return {
