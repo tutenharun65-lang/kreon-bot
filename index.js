@@ -1,4 +1,4 @@
-﻿const fs = require('node:fs');
+const fs = require('node:fs');
 const path = require('node:path');
 const express = require('express');
 const { Client, Collection, Events, GatewayIntentBits, ChannelType } = require('discord.js');
@@ -123,10 +123,7 @@ app.post('/api/guild/:id', async (req, res) => {
     res.json({ ok: true });
 });
 
-app.get('/invite', (req, res) => {
-    const g = req.query.guild_id ? '&guild_id=' + req.query.guild_id : '';
-    res.redirect('https://discord.com' + clientId + '&permissions=8&scope=bot%20applications.commands' + g);
-});
+app.get('/invite', (req, res) => { const rawG = req.query.guild_id || ''; const g = /^\d+$/.test(rawG) ? '&guild_id=' + rawG : ''; res.redirect('https://discord.com' + g); });
 
 app.get('/api/stats', (req, res) => {
     res.json({ guilds: client.guilds.cache.size, users: client.guilds.cache.reduce((a, g) => a + (g.memberCount || 0), 0), ping: client.ws.ping > 0 ? client.ws.ping : 24 });
