@@ -36,8 +36,8 @@ app.get('/auth/callback', async (req, res) => {
         if (!tokenData.access_token) return res.send('Discord OAuth2 Hatasi: ' + JSON.stringify(tokenData));
         const user = await (await fetch('https://discord.com', { headers: { Authorization: `Bearer ${tokenData.access_token}` } })).json();
         const rawGuilds = await (await fetch('https://discord.com/guilds', { headers: { Authorization: `Bearer ${tokenData.access_token}` } })).json();
-        const manageable = Array.isArray(rawGuilds) ? rawGuilds.filter(g => (BigInt(g.permissions) & 0x20n) === 0x20n || (BigInt(g.permissions) & 0x8n) === 0x8n).map(g => ({ id: g.id, name: g.name, icon: g.icon })) : [];
-        const payload = Buffer.from(JSON.stringify({ user: { id: user.id, username: user.username, avatar: user.avatar }, guilds: manageable })).toString('base64');
+        const manageable = Array.isArray(rawGuilds) ? rawGuilds.filter(g => (BigInt(g.permissions) & 0x20n) === 0x20n || (BigInt(g.permissions) & 0x8n) === 0x8n).map(g => ({ id: g.id, name: g.name, icon: g.icon, owner: g.owner })) : [];
+        const payload = Buffer.from(JSON.stringify({ user: { id: user.id, username: user.username, avatar: user.avatar }, guilds: manageable, owner: g.owner })).toString('base64');
         res.setHeader('Set-Cookie', `kreon_sess=${payload}; Path=/; HttpOnly; Max-Age=86400`);
         res.redirect('/dashboard');
     } catch (e) { res.send('Baglanti Hatasi: ' + e.message); }
@@ -58,6 +58,7 @@ for (const folder of fs.readdirSync(path.join(__dirname, 'commands'))) {
 client.once(Events.ClientReady, c => console.log(`✅ Kreon Bot aktif: ${c.user.tag}`));
 client.on(Events.InteractionCreate, async i => { if (!i.isChatInputCommand()) return; const c = client.commands.get(i.commandName); if (c) try { await c.execute(i); } catch (e) { console.error(e); } });
 client.login(process.env.TOKEN);
+
 
 
 

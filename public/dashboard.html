@@ -3,163 +3,215 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kreon Bot • Gelişmiş Kontrol Paneli</title>
+<title>Kreon Bot • Kontrol Paneli</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
-body{background:#090b10;color:#f3f4f6;min-height:100vh;display:flex;flex-direction:column}
-.topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 4%;background:#0f121b;border-bottom:1px solid #1e2436;position:sticky;top:0;z-index:40}
-.logo{font-size:1.35rem;font-weight:800;color:#818cf8;text-decoration:none}
-.user-box{display:flex;align-items:center;gap:12px}
-.user-box img{width:34px;height:34px;border-radius:50%;border:2px solid #5865F2}
-.btn{padding:9px 16px;border-radius:8px;font-weight:600;cursor:pointer;border:none;text-decoration:none;font-size:.88rem;transition:.2s}
-.btn-primary{background:#5865F2;color:#fff}
-.btn-primary:hover{background:#4752c4}
-.btn-danger{background:#dc2626;color:#fff}
-.btn-success{background:#16a34a;color:#fff;padding:12px 24px;font-size:.95rem}
-.server-select-wrap{max-width:1150px;margin:40px auto;padding:0 5%;width:100%}
-.guild-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;margin-top:22px}
-.guild-card{background:#111520;border:1px solid #1e2436;border-radius:14px;padding:24px;text-align:center;transition:.2s}
-.guild-card:hover{border-color:#5865F2;transform:translateY(-3px)}
-.guild-icon{width:70px;height:70px;border-radius:50%;background:#1e2436;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;overflow:hidden}
-.guild-icon img{width:100%;height:100%;object-fit:cover}
-.dash-layout{display:none;flex:1;min-height:calc(100vh - 64px)}
-.sidebar{width:260px;background:#0d1018;border-right:1px solid #1e2436;padding:20px 14px;flex-shrink:0}
-.guild-badge{display:flex;align-items:center;gap:10px;padding:12px;background:#141926;border-radius:10px;margin-bottom:18px;border:1px solid #222a3f}
-.side-title{font-size:.75rem;text-transform:uppercase;color:#6b7280;font-weight:700;padding:10px 12px 6px;letter-spacing:.5px}
-.side-btn{width:100%;text-align:left;padding:10px 14px;border-radius:8px;background:transparent;color:#9ca3af;border:none;font-weight:600;font-size:.92rem;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:4px}
-.side-btn:hover{background:#161b29;color:#fff}
-.side-btn.active{background:#5865F2;color:#fff}
-.main-content{flex:1;padding:30px 4%;max-width:1050px}
-.tab-section{display:none}
-.tab-section.active{display:block}
-.card{background:#111520;border:1px solid #1e2436;border-radius:14px;padding:22px;margin-bottom:18px}
-.card-row{display:flex;justify-content:space-between;align-items:center;gap:16px}
-.card h4{font-size:1.05rem;margin-bottom:4px}
-.card p{font-size:.85rem;color:#9ca3af}
-select,input[type="text"],textarea{background:#090b10;color:#fff;border:1px solid #283149;padding:10px 12px;border-radius:8px;width:100%;margin-top:10px;font-size:.92rem}
-input[type="checkbox"]{width:22px;height:22px;accent-color:#5865F2;cursor:pointer;flex-shrink:0}
-.save-bar{position:sticky;bottom:20px;background:#141927;border:1px solid #2b3550;padding:14px 22px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
-.toast{position:fixed;top:80px;right:24px;background:#16a34a;color:#fff;padding:14px 22px;border-radius:10px;font-weight:600;display:none;z-index:99}
-@media(max-width:768px){.dash-layout{flex-direction:column}.sidebar{width:100%;border-right:none;border-bottom:1px solid #1e2436}}
+body{background:#111218;color:#f3f4f6;min-height:100vh}
+.btn{padding:9px 20px;border-radius:8px;font-weight:600;cursor:pointer;border:none;text-decoration:none;font-size:.9rem;transition:.2s;display:inline-flex;align-items:center;gap:6px}
+.btn-purple{background:#5865F2;color:#fff}.btn-purple:hover{background:#4752c4}
+.btn-dark{background:#232533;color:#d1d5db;border:1px solid #323548}.btn-dark:hover{background:#2d3042;color:#fff}
+.btn-green{background:#16a34a;color:#fff;padding:11px 24px}
+
+/* 2. EKRAN: BIR SUNUCU SECIN */
+.select-page{max-width:760px;margin:0 auto;padding:50px 20px;text-align:center}
+.select-page h1{font-size:2rem;font-weight:800;margin-bottom:8px}
+.select-page p{color:#9ca3af;margin-bottom:32px}
+.server-row{display:flex;justify-content:space-between;align-items:center;background:#181a24;border:1px solid #262938;padding:16px 22px;border-radius:12px;margin-bottom:14px;text-align:left;transition:.2s}
+.server-row:hover{border-color:#5865F2}
+.server-left{display:flex;align-items:center;gap:14px}
+.s-icon{width:48px;height:48px;border-radius:50%;background:#262938;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;overflow:hidden}
+.s-icon img{width:100%;height:100%;object-fit:cover}
+.s-role{font-size:.82rem;color:#9ca3af}
+
+/* 3. EKRAN: ANA KONTROL PANELI */
+.dash-wrap{display:none;min-height:100vh}
+.sidebar{width:255px;background:#151720;border-right:1px solid #232634;padding:18px 12px;flex-shrink:0}
+.brand{display:flex;align-items:center;gap:10px;font-size:1.25rem;font-weight:800;color:#fff;padding:6px 12px 20px;text-decoration:none}
+.brand span{background:#5865F2;padding:4px 9px;border-radius:8px;font-size:1rem}
+.side-cat{font-size:.73rem;color:#6b7280;font-weight:700;text-transform:uppercase;padding:14px 12px 6px;letter-spacing:.5px}
+.side-item{width:100%;text-align:left;padding:10px 14px;border-radius:8px;background:transparent;color:#9ca3af;border:none;font-weight:600;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.side-item:hover{background:#1e212e;color:#fff}
+.side-item.active{background:#252838;color:#fff}
+.badge-new{background:#5865F2;color:#fff;font-size:.65rem;padding:2px 6px;border-radius:5px;font-weight:700}
+
+.main-area{flex:1;display:flex;flex-direction:column}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;background:#151720;border-bottom:1px solid #232634;gap:14px;flex-wrap:wrap}
+.breadcrumb{display:flex;align-items:center;gap:10px;font-size:.9rem;color:#9ca3af}
+.guild-switcher{background:#1e212e;color:#fff;border:1px solid #2f3346;padding:7px 12px;border-radius:8px;font-weight:600;cursor:pointer}
+.search-input{background:#1e212e;border:1px solid #2f3346;color:#fff;padding:8px 14px;border-radius:8px;width:230px;font-size:.88rem}
+.user-pill{display:flex;align-items:center;gap:10px;background:#1e212e;padding:6px 12px;border-radius:99px;font-size:.9rem;font-weight:600}
+.user-pill img{width:28px;height:28px;border-radius:50%}
+
+.content{padding:28px;max-width:1100px;width:100%}
+.section-view{display:none}.section-view.active{display:block}
+.mod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:18px}
+.mod-card{background:#181a24;border:1px solid #262938;border-radius:12px;padding:20px;cursor:pointer;transition:.2s;display:flex;gap:14px;align-items:flex-start}
+.mod-card:hover{border-color:#5865F2;transform:translateY(-2px)}
+.mod-icon{font-size:1.5rem;background:#222534;padding:10px;border-radius:10px}
+.mod-card h4{font-size:1rem;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.mod-card p{font-size:.84rem;color:#9ca3af;line-height:1.45}
+
+.set-box{background:#181a24;border:1px solid #262938;border-radius:12px;padding:20px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.set-box.col{display:block}
+select,input[type="text"]{background:#111218;color:#fff;border:1px solid #2f3346;padding:10px 12px;border-radius:8px;width:100%;margin-top:10px}
+input[type="checkbox"]{width:22px;height:22px;accent-color:#5865F2;cursor:pointer}
+.toast{position:fixed;bottom:24px;right:24px;background:#16a34a;color:#fff;padding:13px 22px;border-radius:10px;font-weight:600;display:none;z-index:99}
+@media(max-width:768px){.dash-wrap{flex-direction:column}.sidebar{width:100%;border-right:none;border-bottom:1px solid #232634}}
 </style>
 </head>
 <body>
-<div class="topbar">
-  <a href="/" class="logo">⚡ Kreon Bot</a>
-  <div class="user-box" id="user-info"><a href="/login" class="btn btn-primary">Discord ile Giriş Yap</a></div>
+<div class="select-page" id="select-view">
+  <h1>Bir sunucu seçin</h1>
+  <p>Sunucunuzu renklendirmeye ve yönetmeye başlayın!</p>
+  <div id="server-list">Sunucular yükleniyor...</div>
 </div>
-<div class="server-select-wrap" id="server-list-view">
-  <h2>🎛️ Sunucu Seçin</h2>
-  <p style="color:#9ca3af;margin-top:4px">Yönetmek istediğiniz sunucuyu seçin veya botu ekleyin.</p>
-  <div class="guild-grid" id="guilds">Sunucular yükleniyor...</div>
-</div>
-<div class="dash-layout" id="settings-view">
+<div class="dash-wrap" id="dash-view">
   <aside class="sidebar">
-    <div class="guild-badge"><strong id="active-guild-name">Sunucu</strong></div>
-    <button class="side-btn" onclick="backToList()">← Sunucu Değiştir</button>
-    <div class="side-title">Genel Ayarlar</div>
-    <button class="side-btn active" onclick="switchTab('genel',this)">📊 Genel & Loglar</button>
-    <button class="side-btn" onclick="switchTab('karsilama',this)">👋 Karşılama & Otorol</button>
-    <div class="side-title">Koruma & Moderasyon</div>
-    <button class="side-btn" onclick="switchTab('automod',this)">🛡️ Otomatik Moderasyon</button>
-    <button class="side-btn" onclick="switchTab('antinuke',this)">🔒 Anti-Nuke Guard</button>
-    <div class="side-title">Topluluk & Eğlence</div>
-    <button class="side-btn" onclick="switchTab('seviye',this)">🏆 Seviye & Ekonomi</button>
-    <button class="side-btn" onclick="switchTab('ticket',this)">🎫 Ticket & Yapay Zekâ</button>
+    <a href="/" class="brand"><span>K</span> Kontrol Paneli</a>
+    <button class="side-item active" onclick="openTab('home',this)">🎛️ Kontrol Paneli</button>
+    <button class="side-item" onclick="openTab('logs',this)">📋 Denetim Kaydı</button>
+    <div class="side-cat">Sunucu Yönetimi</div>
+    <button class="side-item" onclick="openTab('seviye',this)">📊 Seviye Sistemi</button>
+    <button class="side-item" onclick="openTab('karsilama',this)">👋 Karşılama & Veda</button>
+    <button class="side-item" onclick="openTab('moderasyon',this)">🛡️ Moderasyon <span class="badge-new">YENİ</span></button>
+    <button class="side-item" onclick="openTab('automod',this)">🤖 Otomatik Moderasyon <span class="badge-new">YENİ</span></button>
+    <button class="side-item" onclick="openTab('guard',this)">🔒 Anti-Nuke Guard</button>
+    <button class="side-item" onclick="openTab('ekonomi',this)">💰 Ekonomi & AI</button>
   </aside>
-  <main class="main-content">
-    <div class="tab-section active" id="tab-genel">
-      <h2 style="margin-bottom:16px">📊 Genel & Kayıt (Log) Ayarları</h2>
-      <div class="card"><h4>📋 Moderasyon Log Kanalı</h4><p>Ban, kick, susturma ve silinen mesaj kayıtlarının gideceği kanal.</p><select id="logChannel"></select></div>
-      <div class="card"><h4>🚨 Guard Güvenlik Log Kanalı</h4><p>Anti-Nuke koruma müdahalelerinin bildirileceği yetkili kanalı.</p><select id="guardLogChannel"></select></div>
+  <div class="main-area">
+    <header class="topbar">
+      <div class="breadcrumb">
+        <a href="/" style="color:#9ca3af;text-decoration:none">Ana Sayfa</a> ›
+        <span style="cursor:pointer" onclick="showServerList()">Sunucularım</span> ›
+        <select class="guild-switcher" id="guild-dropdown" onchange="switchGuildFromDropdown(this.value)"></select>
+      </div>
+      <input type="text" class="search-input" placeholder="🔍 Özellik ara..." onkeyup="filterCards(this.value)">
+      <div class="user-pill" id="user-pill"></div>
+    </header>
+    <div class="content">
+      <div class="section-view active" id="sec-home">
+        <h2>Kontrol Paneli</h2>
+        <p style="color:#9ca3af;margin-top:4px">Kontrol paneline hoş geldiniz! Yönetmek istediğiniz modüle tıklayın.</p>
+        <h3 style="margin-top:26px;font-size:1.1rem;color:#d1d5db">Sunucu Yönetimi</h3>
+        <div class="mod-grid" id="mod-cards">
+          <div class="mod-card" onclick="openTab('seviye')"><div class="mod-icon">📊</div><div><h4>Seviye Sistemi</h4><p>Mesaj ve ses etkinliğini seviyeler, sıralamalar ve rollerle ödüllendirin.</p></div></div>
+          <div class="mod-card" onclick="openTab('karsilama')"><div class="mod-icon">👋</div><div><h4>Karşılama & Veda</h4><p>Bir üye katıldığında veya ayrıldığında olacakları ve otorolü yönetin.</p></div></div>
+          <div class="mod-card" onclick="openTab('moderasyon')"><div class="mod-icon">🛡️</div><div><h4>Moderasyon <span class="badge-new">YENİ</span></h4><p>Uyarıları, susturmaları, atmaları ve yasaklamaları takip edin.</p></div></div>
+          <div class="mod-card" onclick="openTab('automod')"><div class="mod-icon">🤖</div><div><h4>Otomatik Moderasyon <span class="badge-new">YENİ</span></h4><p>Küfür, reklam linki ve büyük harf spamını otomatik engelleyin.</p></div></div>
+          <div class="mod-card" onclick="openTab('guard')"><div class="mod-icon">🔒</div><div><h4>Anti-Nuke & Guard</h4><p>İzinsiz kanal/rol silme ve zararlı bot girişlerini anında engelleyin.</p></div></div>
+          <div class="mod-card" onclick="openTab('ekonomi')"><div class="mod-icon">💰</div><div><h4>Ekonomi & Yapay Zekâ</h4><p>Günlük coin ödülleri, bakiye komutları ve AI sohbet asistanını yönetin.</p></div></div>
+        </div>
+      </div>
+
+      <div class="section-view" id="sec-logs">
+        <h2>📋 Denetim Kaydı (Log Kanalları)</h2>
+        <div class="set-box col" style="margin-top:16px"><h4>Moderasyon Log Kanalı</h4><select id="logChannel"></select></div>
+        <div class="set-box col"><h4>Anti-Nuke Guard Log Kanalı</h4><select id="guardLogChannel"></select></div>
+        <button class="btn btn-green" onclick="saveSettings()">💾 Ayarları Kaydet</button>
+      </div>
+
+      <div class="section-view" id="sec-seviye">
+        <h2>📊 Seviye Sistemi</h2>
+        <div class="set-box" style="margin-top:16px"><div><h4>Seviye & XP Sistemini Aktif Et</h4><p style="font-size:.84rem;color:#9ca3af">Sohbette mesaj yazan üyelere XP ve seviye atlama mesajı verir.</p></div><input type="checkbox" id="leveling"></div>
+        <button class="btn btn-green" onclick="saveSettings()">💾 Ayarları Kaydet</button>
+      </div>
+
+      <div class="section-view" id="sec-karsilama">
+        <h2>👋 Karşılama & Veda</h2>
+        <div class="set-box col" style="margin-top:16px"><h4>Hoş Geldin Kanalı</h4><select id="welcomeChannel"></select></div>
+        <div class="set-box col"><h4>Karşılama Mesajı ({user} ve {count} kullanabilirsiniz)</h4><input type="text" id="welcomeMessage" placeholder="Hoş geldin {user}! Seninle birlikte {count} kişi olduk."></div>
+        <div class="set-box col"><h4>Otomatik Verilecek Üye Rolü (Otorol)</h4><select id="autoRole"></select></div>
+        <button class="btn btn-green" onclick="saveSettings()">💾 Ayarları Kaydet</button>
+      </div>
+
+      <div class="section-view" id="sec-moderasyon">
+        <h2>🛡️ Moderasyon Ayarları</h2>
+        <div class="set-box col" style="margin-top:16px"><h4>Ticket Destek Yetkili Rolü</h4><select id="ticketRole"></select></div>
+        <button class="btn btn-green" onclick="saveSettings()">💾 Ayarları Kaydet</button>
+      </div>
+
+      <div class="section-view" id="sec-automod">
+        <h2>🤖 Otomatik Moderasyon</h2>
+        <div class="set-box" style="margin-top:16px"><div><h4>Küfür & Argo Filtresi</h4><p style="font-size:.84rem;color:#9ca3af">Yasaklı kelimeleri otomatik siler.</p></div><input type="checkbox" id="antiSwear"></div>
+        <div class="set-box"><div><h4>Reklam & Davet Linki Engeli</h4><p style="font-size:.84rem;color:#9ca3af">İzinsiz Discord davet linklerini siler.</p></div><input type="checkbox" id="antiLink"></div>
+        <div class="set-box"><div><h4>Büyük Harf (Caps-Lock) Koruması</h4><p style="font-size:.84rem;color:#9ca3af">Tamamı büyük harfli spam mesajları engeller.</p></div><input type="checkbox" id="antiCaps"></div>
+        <button class="btn btn-green" onclick="saveSettings()">💾 Ayarları Kaydet</button>
+      </div>
+
+      <div class="section-view" id="sec-guard">
+        <h2>🔒 Anti-Nuke & Guard</h2>
+        <div class="set-box" style="margin-top:16px"><div><h4>Kanal Silme Koruması</h4><p style="font-size:.84rem;color:#9ca3af">İzinsiz kanal silen yetkilinin rollerini alır.</p></div><input type="checkbox" id="guardChannel"></div>
+        <div class="set-box"><div><h4>Rol Silme Koruması</h4><p style="font-size:.84rem;color:#9ca3af">İzinsiz rol silen yetkilinin rollerini alır.</p></div><input type="checkbox" id="guardRole"></div>
+        <div class="set-box"><div><h4>Anti-Bot Koruması</h4><p style="font-size:.84rem;color:#9ca3af">Sunucu sahibi dışındakilerin bot eklemesini engeller.</p></div><input type="checkbox" id="guardBot"></div>
+        <button class="btn btn-green" onclick="saveSettings()">💾 Ayarları Kaydet</button>
+      </div>
+
+      <div class="section-view" id="sec-ekonomi">
+        <h2>💰 Ekonomi & Yapay Zekâ</h2>
+        <div class="set-box" style="margin-top:16px"><div><h4>Sunucu Ekonomi Sistemi</h4><p style="font-size:.84rem;color:#9ca3af">Günlük ödül, bakiye ve oyun komutlarını açar.</p></div><input type="checkbox" id="economy"></div>
+        <div class="set-box"><div><h4>Yapay Zekâ Sohbet Asistanı</h4><p style="font-size:.84rem;color:#9ca3af">Bot etiketlendiğinde yapay zekâ yanıt verir.</p></div><input type="checkbox" id="aiChat"></div>
+        <button class="btn btn-green" onclick="saveSettings()">💾 Ayarları Kaydet</button>
+      </div>
     </div>
-    <div class="tab-section" id="tab-karsilama">
-      <h2 style="margin-bottom:16px">👋 Karşılama & Otorol Sistemi</h2>
-      <div class="card"><h4>📥 Hoş Geldin Kanalı</h4><p>Sunucuya yeni katılan üyelerin karşılanacağı metin kanalı.</p><select id="welcomeChannel"></select></div>
-      <div class="card"><h4>💬 Özel Hoş Geldin Mesajı</h4><p>Kullanıcı etiketi için <b>{user}</b>, sunucu üye sayısı için <b>{count}</b> yazabilirsiniz.</p><input type="text" id="welcomeMessage" placeholder="Hoş geldin {user}! Seninle birlikte {count} kişi olduk."></div>
-      <div class="card"><h4>🎭 Otomatik Üye Rolü (Otorol)</h4><p>Sunucuya katılan üyelere otomatik verilecek rol.</p><select id="autoRole"></select></div>
-    </div>
-    <div class="tab-section" id="tab-automod">
-      <h2 style="margin-bottom:16px">🛡️ Akıllı Otomatik Moderasyon</h2>
-      <div class="card card-row"><div><h4>🤬 Küfür ve Hakaret Filtresi</h4><p>Yasaklı kelimeleri otomatik siler ve kullanıcıyı uyarır.</p></div><input type="checkbox" id="antiSwear"></div>
-      <div class="card card-row"><div><h4>🔗 Reklam & Discord Davet Engeli</h4><p>Yetkisiz Discord davet linkleri ve reklam bağlantılarını siler.</p></div><input type="checkbox" id="antiLink"></div>
-      <div class="card card-row"><div><h4>🔠 Büyük Harf (Caps-Lock) Koruması</h4><p>Tamamı büyük harfle yazılan spam mesajları engeller.</p></div><input type="checkbox" id="antiCaps"></div>
-    </div>
-    <div class="tab-section" id="tab-antinuke">
-      <h2 style="margin-bottom:16px">🔒 Anti-Nuke & Sunucu Guard</h2>
-      <div class="card card-row"><div><h4>📁 Kanal Silme / Oluşturma Koruması</h4><p>İzinsiz kanal silen yetkilinin yetkilerini alır veya yasaklar.</p></div><input type="checkbox" id="guardChannel"></div>
-      <div class="card card-row"><div><h4>👑 Rol Silme & Yönetici Verme Koruması</h4><p>İzinsiz rol silme veya yönetici yetkisi dağıtımını engeller.</p></div><input type="checkbox" id="guardRole"></div>
-      <div class="card card-row"><div><h4>🤖 Zararlı Bot Giriş Koruması (Anti-Bot)</h4><p>Sunucu sahibi dışındaki kişilerin sunucuya bot eklemesini engeller.</p></div><input type="checkbox" id="guardBot"></div>
-    </div>
-    <div class="tab-section" id="tab-seviye">
-      <h2 style="margin-bottom:16px">🏆 Seviye & Ekonomi Ayarları</h2>
-      <div class="card card-row"><div><h4>⭐ Seviye (XP) Sistemi</h4><p>Sohbet eden üyelere XP ve seviye atlama ödülleri verir.</p></div><input type="checkbox" id="leveling"></div>
-      <div class="card card-row"><div><h4>💰 Sunucu Ekonomi Sistemi</h4><p>Günlük ödül, bakiye, transfer ve mini oyunları aktif eder.</p></div><input type="checkbox" id="economy"></div>
-    </div>
-    <div class="tab-section" id="tab-ticket">
-      <h2 style="margin-bottom:16px">🎫 Ticket Destek & Yapay Zekâ</h2>
-      <div class="card card-row"><div><h4>🤖 Yapay Zekâ Sohbet Asistanı</h4><p>Üyeler botu etiketlediğinde yapay zekânın yanıt vermesini sağlar.</p></div><input type="checkbox" id="aiChat"></div>
-      <div class="card"><h4>🎫 Ticket Destek Yetkili Rolü</h4><p>Açılan destek taleplerini görebilecek yetkili rolünü seçin.</p><select id="ticketRole"></select></div>
-    </div>
-    <div class="save-bar">
-      <span>Değişiklikleri sunucuya uygulamak için kaydetmeyi unutmayın.</span>
-      <button class="btn btn-success" onclick="saveSettings()">💾 Ayarları Kaydet</button>
-    </div>
-  </main>
+  </div>
 </div>
-<div class="toast" id="toast">✅ Tüm ayarlar başarıyla kaydedildi!</div>
-<div class="dash-layout" id="settings-view">
-  <aside class="sidebar">
-    <div class="guild-badge"><strong id="active-guild-name">Sunucu</strong></div>
-    <button class="side-btn" onclick="backToList()">← Sunucu Değiştir</button>
-    <div class="side-title">Genel Ayarlar</div>
-    <button class="side-btn active" onclick="switchTab('genel',this)">📊 Genel & Loglar</button>
-    <button class="side-btn" onclick="switchTab('karsilama',this)">👋 Karşılama & Otorol</button>
-    <div class="side-title">Koruma & Moderasyon</div>
-    <button class="side-btn" onclick="switchTab('automod',this)">🛡️ Otomatik Moderasyon</button>
-    <button class="side-btn" onclick="switchTab('antinuke',this)">🔒 Anti-Nuke Guard</button>
-    <div class="side-title">Topluluk & Eğlence</div>
-    <button class="side-btn" onclick="switchTab('seviye',this)">🏆 Seviye & Ekonomi</button>
-    <button class="side-btn" onclick="switchTab('ticket',this)">🎫 Ticket & Yapay Zekâ</button>
-  </aside>
-  <main class="main-content">
-    <div class="tab-section active" id="tab-genel">
-      <h2 style="margin-bottom:16px">📊 Genel & Kayıt (Log) Ayarları</h2>
-      <div class="card"><h4>📋 Moderasyon Log Kanalı</h4><p>Ban, kick, susturma ve silinen mesaj kayıtlarının gideceği kanal.</p><select id="logChannel"></select></div>
-      <div class="card"><h4>🚨 Guard Güvenlik Log Kanalı</h4><p>Anti-Nuke koruma müdahalelerinin bildirileceği yetkili kanalı.</p><select id="guardLogChannel"></select></div>
-    </div>
-    <div class="tab-section" id="tab-karsilama">
-      <h2 style="margin-bottom:16px">👋 Karşılama & Otorol Sistemi</h2>
-      <div class="card"><h4>📥 Hoş Geldin Kanalı</h4><p>Sunucuya yeni katılan üyelerin karşılanacağı metin kanalı.</p><select id="welcomeChannel"></select></div>
-      <div class="card"><h4>💬 Özel Hoş Geldin Mesajı</h4><p>Kullanıcı etiketi için <b>{user}</b>, sunucu üye sayısı için <b>{count}</b> yazabilirsiniz.</p><input type="text" id="welcomeMessage" placeholder="Hoş geldin {user}! Seninle birlikte {count} kişi olduk."></div>
-      <div class="card"><h4>🎭 Otomatik Üye Rolü (Otorol)</h4><p>Sunucuya katılan üyelere otomatik verilecek rol.</p><select id="autoRole"></select></div>
-    </div>
-    <div class="tab-section" id="tab-automod">
-      <h2 style="margin-bottom:16px">🛡️ Akıllı Otomatik Moderasyon</h2>
-      <div class="card card-row"><div><h4>🤬 Küfür ve Hakaret Filtresi</h4><p>Yasaklı kelimeleri otomatik siler ve kullanıcıyı uyarır.</p></div><input type="checkbox" id="antiSwear"></div>
-      <div class="card card-row"><div><h4>🔗 Reklam & Discord Davet Engeli</h4><p>Yetkisiz Discord davet linkleri ve reklam bağlantılarını siler.</p></div><input type="checkbox" id="antiLink"></div>
-      <div class="card card-row"><div><h4>🔠 Büyük Harf (Caps-Lock) Koruması</h4><p>Tamamı büyük harfle yazılan spam mesajları engeller.</p></div><input type="checkbox" id="antiCaps"></div>
-    </div>
-    <div class="tab-section" id="tab-antinuke">
-      <h2 style="margin-bottom:16px">🔒 Anti-Nuke & Sunucu Guard</h2>
-      <div class="card card-row"><div><h4>📁 Kanal Silme / Oluşturma Koruması</h4><p>İzinsiz kanal silen yetkilinin yetkilerini alır veya yasaklar.</p></div><input type="checkbox" id="guardChannel"></div>
-      <div class="card card-row"><div><h4>👑 Rol Silme & Yönetici Verme Koruması</h4><p>İzinsiz rol silme veya yönetici yetkisi dağıtımını engeller.</p></div><input type="checkbox" id="guardRole"></div>
-      <div class="card card-row"><div><h4>🤖 Zararlı Bot Giriş Koruması (Anti-Bot)</h4><p>Sunucu sahibi dışındaki kişilerin sunucuya bot eklemesini engeller.</p></div><input type="checkbox" id="guardBot"></div>
-    </div>
-    <div class="tab-section" id="tab-seviye">
-      <h2 style="margin-bottom:16px">🏆 Seviye & Ekonomi Ayarları</h2>
-      <div class="card card-row"><div><h4>⭐ Seviye (XP) Sistemi</h4><p>Sohbet eden üyelere XP ve seviye atlama ödülleri verir.</p></div><input type="checkbox" id="leveling"></div>
-      <div class="card card-row"><div><h4>💰 Sunucu Ekonomi Sistemi</h4><p>Günlük ödül, bakiye, transfer ve mini oyunları aktif eder.</p></div><input type="checkbox" id="economy"></div>
-    </div>
-    <div class="tab-section" id="tab-ticket">
-      <h2 style="margin-bottom:16px">🎫 Ticket Destek & Yapay Zekâ</h2>
-      <div class="card card-row"><div><h4>🤖 Yapay Zekâ Sohbet Asistanı</h4><p>Üyeler botu etiketlediğinde yapay zekânın yanıt vermesini sağlar.</p></div><input type="checkbox" id="aiChat"></div>
-      <div class="card"><h4>🎫 Ticket Destek Yetkili Rolü</h4><p>Açılan destek taleplerini görebilecek yetkili rolünü seçin.</p><select id="ticketRole"></select></div>
-    </div>
-    <div class="save-bar">
-      <span>Değişiklikleri sunucuya uygulamak için kaydetmeyi unutmayın.</span>
-      <button class="btn btn-success" onclick="saveSettings()">💾 Ayarları Kaydet</button>
-    </div>
-  </main>
-</div>
-<div class="toast" id="toast">✅ Tüm ayarlar başarıyla kaydedildi!</div>
+<div class="toast" id="toast">✅ Ayarlar başarıyla kaydedildi!</div>
+<script>
+let allGuilds = [], currentGuildId = null;
+function openTab(id, btn) {
+  document.querySelectorAll('.side-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('sec-' + id).classList.add('active');
+}
+function filterCards(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('.mod-card').forEach(c => { c.style.display = c.innerText.toLowerCase().includes(q) ? 'flex' : 'none'; });
+}
+function showServerList() {
+  document.getElementById('dash-view').style.display = 'none';
+  document.getElementById('select-view').style.display = 'block';
+}
+async function init() {
+  const res = await fetch('/api/me');
+  if (!res.ok) { location.href = '/login'; return; }
+  const data = await res.json();
+  allGuilds = data.guilds;
+  const av = data.user.avatar ? `https://discordapp.com{data.user.id}/${data.user.avatar}.png` : 'https://discordapp.com';
+  document.getElementById('user-pill').innerHTML = `<img src="${av}"><span>${data.user.username}</span><a href="/logout" style="color:#ef4444;text-decoration:none;margin-left:6px">Çıkış</a>`;
+  document.getElementById('server-list').innerHTML = allGuilds.map(g => {
+    const ic = g.icon ? `<img src="https://discordapp.com{g.id}/${g.icon}.png">` : g.name.charAt(0);
+    const btn = g.botIn
+      ? `<button class="btn btn-purple" onclick="selectGuild('${g.id}')">Yönet</button>`
+      : `<a href="/invite?guild_id=${g.id}" target="_blank" class="btn btn-dark">Davet et</a>`;
+    return `<div class="server-row"><div class="server-left"><div class="s-icon">${ic}</div><div><strong>${g.name}</strong><div class="s-role">${g.owner ? 'Owner' : 'Admin'}</div></div></div>${btn}</div>`;
+  }).join('');
+  const added = allGuilds.filter(g => g.botIn);
+  document.getElementById('guild-dropdown').innerHTML = added.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+}
+function switchGuildFromDropdown(id) { selectGuild(id); }
+async function selectGuild(id) {
+  currentGuildId = id;
+  document.getElementById('guild-dropdown').value = id;
+  document.getElementById('select-view').style.display = 'none';
+  document.getElementById('dash-view').style.display = 'flex';
+  const res = await fetch('/api/guild/' + id);
+  const d = await res.json();
+  ['antiSwear','antiLink','antiCaps','guardChannel','guardRole','guardBot','leveling','economy','aiChat'].forEach(k => document.getElementById(k).checked = !!d.settings[k]);
+  document.getElementById('welcomeMessage').value = d.settings.welcomeMessage || '';
+  const chOpts = '<option value="">Kapalı / Seçilmedi</option>' + d.channels.map(c => `<option value="${c.id}">#${c.name}</option>`).join('');
+  ['logChannel','guardLogChannel','welcomeChannel'].forEach(k => { document.getElementById(k).innerHTML = chOpts; document.getElementById(k).value = d.settings[k] || ''; });
+  const roleOpts = '<option value="">Kapalı / Seçilmedi</option>' + (d.roles || []).map(r => `<option value="${r.id}">@${r.name}</option>`).join('');
+  ['autoRole','ticketRole'].forEach(k => { document.getElementById(k).innerHTML = roleOpts; document.getElementById(k).value = d.settings[k] || ''; });
+}
+async function saveSettings() {
+  const body = { welcomeMessage: document.getElementById('welcomeMessage').value };
+  ['antiSwear','antiLink','antiCaps','guardChannel','guardRole','guardBot','leveling','economy','aiChat'].forEach(k => body[k] = document.getElementById(k).checked);
+  ['logChannel','guardLogChannel','welcomeChannel','autoRole','ticketRole'].forEach(k => body[k] = document.getElementById(k).value);
+  await fetch('/api/guild/' + currentGuildId, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const t = document.getElementById('toast'); t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000);
+}
+init();
+</script>
+</body>
+</html>
