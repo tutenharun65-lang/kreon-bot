@@ -3,6 +3,7 @@ const path = require('node:path');
 const express = require('express');
 const { Client, Collection, Events, GatewayIntentBits, ChannelType } = require('discord.js');
 require('dotenv').config();
+const { connectDB, getSettings, saveSettings, registerSystems } = require('./systems');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -10,7 +11,7 @@ const clientId = (process.env.CLIENT_ID || '1569848116973277234').replace(/\D/g,
 const redirectUri = 'https://onrender.com';
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers] });
-const guildSettings = new Map();
+connectDB(); registerSystems(client);
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -43,8 +44,8 @@ app.get('/auth/callback', async (req, res) => {
 });
 
 app.get('/api/me', (req, res) => { const s = getSession(req); if (!s) return res.status(401).json({ error: 'Giriş gerekli' }); res.json({ user: s.user, guilds: s.guilds.map(g => ({ ...g, botIn: client.guilds.cache.has(g.id) })) }); });
-app.get('/api/guild/:id', (req, res) => { const g = client.guilds.cache.get(req.params.id); if (!g) return res.status(404).json({ error: 'Yok' }); res.json({ settings: guildSettings.get(g.id) || {}, channels: g.channels.cache.filter(c => c.type === ChannelType.GuildText).map(c => ({ id: c.id, name: c.name })) }); });
-app.post('/api/guild/:id', (req, res) => { guildSettings.set(req.params.id, req.body); res.json({ ok: true }); });
+app.get('/api/guild/:id', async (req, res) => { const g = client.guilds.cache.get(req.params.id); if (!g) return res.status(404).json({ error: 'Yok' }); res.json({ settings: await getSettings(g.id), channels: g.channels.cache.filter(c => c.type === ChannelType.GuildText).map(c => ({ id: c.id, name: c.name })) }); });
+app.post('/api/guild/:id', async (req, res) => { await saveSettings(req.params.id, req.body); res.json({ ok: true }); });
 app.get('/invite', (req, res) => res.redirect(`https://discord.com{clientId}&permissions=8&scope=bot%20applications.commands${req.query.guild_id ? '&guild_id=' + req.query.guild_id : ''}`));
 app.get('/api/stats', (req, res) => res.json({ guilds: client.guilds.cache.size, users: client.guilds.cache.reduce((a, g) => a + (g.memberCount || 0), 0), ping: client.ws.ping > 0 ? client.ws.ping : 24 }));
 app.listen(port, () => console.log(`🌐 Site ve Kontrol Paneli ${port} portunda aktif.`));
@@ -57,6 +58,7 @@ for (const folder of fs.readdirSync(path.join(__dirname, 'commands'))) {
 client.once(Events.ClientReady, c => console.log(`✅ Kreon Bot aktif: ${c.user.tag}`));
 client.on(Events.InteractionCreate, async i => { if (!i.isChatInputCommand()) return; const c = client.commands.get(i.commandName); if (c) try { await c.execute(i); } catch (e) { console.error(e); } });
 client.login(process.env.TOKEN);
+
 
 
 
