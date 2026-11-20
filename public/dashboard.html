@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kreon Bot • Kontrol Paneli</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+body{background:#090b10;color:#f3f4f6;min-height:100vh}
+.nav{display:flex;justify-content:space-between;align-items:center;padding:16px 6%;background:#0f121b;border-bottom:1px solid #1e2436}
+.logo{font-size:1.4rem;font-weight:800;color:#818cf8;text-decoration:none}
+.user-box{display:flex;align-items:center;gap:12px}
+.user-box img{width:36px;height:36px;border-radius:50%;border:2px solid #5865F2}
+.btn{padding:9px 18px;border-radius:9px;font-weight:600;cursor:pointer;border:none;text-decoration:none;display:inline-block;font-size:.9rem}
+.btn-primary{background:#5865F2;color:#fff}
+.btn-danger{background:#dc2626;color:#fff}
+.btn-success{background:#16a34a;color:#fff;width:100%;padding:14px;font-size:1rem;margin-top:20px}
+.container{max-width:1100px;margin:35px auto;padding:0 6%}
+.guild-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;margin-top:20px}
+.guild-card{background:#111520;border:1px solid #1e2436;border-radius:14px;padding:22px;text-align:center}
+.guild-icon{width:68px;height:68px;border-radius:50%;background:#1e2436;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;overflow:hidden}
+.guild-icon img{width:100%;height:100%;object-fit:cover}
+.panel-box{display:none;background:#111520;border:1px solid #1e2436;border-radius:16px;padding:28px;margin-top:20px}
+.setting-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:20px}
+.setting-item{background:#161b29;border:1px solid #242c42;padding:18px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+select{background:#0d1018;color:#fff;border:1px solid #2a334d;padding:9px 12px;border-radius:8px;width:100%;margin-top:8px}
+input[type="checkbox"]{width:22px;height:22px;accent-color:#5865F2;cursor:pointer}
+.toast{position:fixed;bottom:24px;right:24px;background:#16a34a;color:#fff;padding:14px 22px;border-radius:10px;font-weight:600;display:none}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/" class="logo">⚡ Kreon Bot • Kontrol Paneli</a>
+  <div class="user-box" id="user-info"><a href="/login" class="btn btn-primary">Discord ile Giriş Yap</a></div>
+</nav>
+<div class="container">
+  <div id="server-list-view">
+    <h2>🎛️ Yönetebileceğin Sunucular</h2>
+    <div class="guild-grid" id="guilds">Yükleniyor...</div>
+  </div>
+  <div class="panel-box" id="settings-view">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e2436;padding-bottom:15px">
+      <h2 id="active-guild-name">Sunucu Ayarları</h2>
+      <button class="btn btn-primary" onclick="backToList()">← Sunuculara Dön</button>
+    </div>
+    <div class="setting-grid">
+      <div class="setting-item"><div><h4>🛡️ Otomatik Moderasyon</h4><p style="font-size:.83rem;color:#9ca3af">Küfür ve reklam linklerini siler.</p></div><input type="checkbox" id="automod"></div>
+      <div class="setting-item"><div><h4>🔒 Anti-Nuke Guard</h4><p style="font-size:.83rem;color:#9ca3af">İzinsiz kanal/rol silmeyi engeller.</p></div><input type="checkbox" id="antinuke"></div>
+      <div class="setting-item"><div><h4>🏆 Seviye & XP</h4><p style="font-size:.83rem;color:#9ca3af">Mesaj atan üyelere XP verir.</p></div><input type="checkbox" id="leveling"></div>
+      <div class="setting-item"><div><h4>💰 Ekonomi Sistemi</h4><p style="font-size:.83rem;color:#9ca3af">Günlük ödül ve bakiye komutlarını açar.</p></div><input type="checkbox" id="economy"></div>
+      <div class="setting-item" style="display:block"><h4>👋 Hoş Geldin Kanalı</h4><select id="welcomeChannel"><option value="">Kapalı</option></select></div>
+      <div class="setting-item" style="display:block"><h4>📋 Mod-Log Kanalı</h4><select id="logChannel"><option value="">Kapalı</option></select></div>
+    </div>
+    <button class="btn btn-success" onclick="saveSettings()">💾 Ayarları Kaydet</button>
+  </div>
+</div>
+<div class="toast" id="toast">✅ Ayarlar kaydedildi!</div>
+<script>
+let currentGuildId = null;
+async function loadDashboard() {
+  const res = await fetch('/api/me');
+  if (!res.ok) { location.href = '/login'; return; }
+  const data = await res.json();
+  const avatar = data.user.avatar ? `https://discordapp.com{data.user.id}/${data.user.avatar}.png` : 'https://discordapp.com';
+  document.getElementById('user-info').innerHTML = `<img src="${avatar}"><strong>${data.user.username}</strong><a href="/logout" class="btn btn-danger">Çıkış</a>`;
+  document.getElementById('guilds').innerHTML = data.guilds.map(g => {
+    const icon = g.icon ? `<img src="https://discordapp.com{g.id}/${g.icon}.png">` : g.name.charAt(0);
+    const btn = g.botIn
+      ? `<button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="openGuild('${g.id}','${g.name.replace(/'/g,"")}')">⚙️ Paneli Aç</button>`
+      : `<a href="/invite?guild_id=${g.id}" target="_blank" class="btn" style="background:#242c42;color:#fff;width:100%;margin-top:12px">➕ Botu Ekle</a>`;
+    return `<div class="guild-card"><div class="guild-icon">${icon}</div><h4>${g.name}</h4>${btn}</div>`;
+  }).join('');
+}
+async function openGuild(id, name) {
+  currentGuildId = id;
+  document.getElementById('server-list-view').style.display = 'none';
+  document.getElementById('settings-view').style.display = 'block';
+  document.getElementById('active-guild-name').innerText = '⚙️ ' + name;
+  const res = await fetch('/api/guild/' + id);
+  const d = await res.json();
+  ['automod','antinuke','leveling','economy'].forEach(k => document.getElementById(k).checked = !!d.settings[k]);
+  const opts = '<option value="">Kapalı</option>' + d.channels.map(c => `<option value="${c.id}">#${c.name}</option>`).join('');
+  document.getElementById('welcomeChannel').innerHTML = opts;
+  document.getElementById('logChannel').innerHTML = opts;
+  document.getElementById('welcomeChannel').value = d.settings.welcomeChannel || '';
+  document.getElementById('logChannel').value = d.settings.logChannel || '';
+}
+function backToList() { document.getElementById('settings-view').style.display = 'none'; document.getElementById('server-list-view').style.display = 'block'; }
+async function saveSettings() {
+  const body = { automod: document.getElementById('automod').checked, antinuke: document.getElementById('antinuke').checked, leveling: document.getElementById('leveling').checked, economy: document.getElementById('economy').checked, welcomeChannel: document.getElementById('welcomeChannel').value, logChannel: document.getElementById('logChannel').value };
+  await fetch('/api/guild/' + currentGuildId, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const t = document.getElementById('toast'); t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000);
+}
+loadDashboard();
+</script>
+</body>
+</html>
