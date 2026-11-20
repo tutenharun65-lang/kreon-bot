@@ -23,6 +23,7 @@ function buildDiscordAuthUrl() {
     u.searchParams.set('response_type', 'code');
     u.searchParams.set('redirect_uri', 'https://onrender.com');
     u.searchParams.set('scope', 'identify guilds');
+    u.searchParams.set('integration_type', '0');
     return u.toString();
 }
 
@@ -84,4 +85,5 @@ for (const folder of fs.readdirSync(path.join(__dirname, 'commands'))) {
 client.once(Events.ClientReady, c => console.log(`✅ Kreon Bot aktif: ${c.user.tag}`));
 client.on(Events.InteractionCreate, async i => { if (!i.isChatInputCommand()) return; const c = client.commands.get(i.commandName); if (c) try { await c.execute(i); } catch (e) { console.error(e); } });
 client.login(process.env.TOKEN);
+
 
