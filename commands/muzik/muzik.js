@@ -18,7 +18,7 @@ module.exports = [
     data: new SlashCommandBuilder()
       .setName('oynat')
       .setDescription('Lavalink ses motoruyla odaya girer ve şarkı çalar.')
-      .addStringOption(o => o.setName('şarkı').setDescription('Şarkı adı veya linki').setRequired(true)),
+      .addStringOption(o => o.setName('şarkı').setDescription('Şarkı adı yazın (YouTube linki değil)').setRequired(true)),
     async execute(i) {
       const vc = i.member.voice?.channel;
       if (!vc) return i.reply({ content: '🔊 Önce bir **ses kanalına** girmelisin!', ephemeral: true });
@@ -27,9 +27,13 @@ module.exports = [
       try {
         const sh = getLavalink();
         const node = sh && sh.options.nodeResolver(sh.nodes);
-        if (!node) return i.editReply('⏳ Ses sunucusu şu an bağlanıyor, 10 saniye sonra tekrar dene.');
+        if (!node) return i.editReply('⏳ Ses sunucusu şu an uyanıyor, 5 saniye bekleyip tekrar `/oynat` yaz!');
 
-        const query = i.options.getString('şarkı');
+        let query = i.options.getString('şarkı');
+        if (/youtube\.com|youtu\.be/.test(query)) {
+          return i.editReply('⚠️ YouTube linki yerine doğrudan **şarkı adını** yaz knk! (Örnek: `/oynat şarkı: Era7capone OLABİLİR`)');
+        }
+
         const searchStr = /^https?:\/\//.test(query) ? query : 'scsearch:' + query;
         const res = await node.rest.resolve(searchStr);
 
@@ -45,14 +49,8 @@ module.exports = [
         const songInfo = { title: track.info.title, url: track.info.uri, encoded: track.encoded, duration: sure, thumb: track.info.artworkUrl };
 
         let q = queues.get(i.guild.id);
-        if (!q) {
-          const embed = new EmbedBuilder()
-            .setColor('#5865F2')
-            .setTitle('🎵 Ses Kanalında Çalınıyor')
-            .setDescription(`**[${songInfo.title}](${songInfo.url})**\n⏱️ Süre: \`${songInfo.duration}\` • İsteyen: <@${i.user.id}>`)
-            .setThumbnail(songInfo.thumb);
-          await i.editReply({ embeds: [embed] });
-
+        if (!q || !sh.players.has(i.guild.id)) {
+          await sh.leaveVoiceChannel(i.guild.id).catch(() => {});
           const player = await sh.joinVoiceChannel({ guildId: i.guild.id, channelId: vc.id, shardId: 0, deaf: true });
           q = { player, songs: [songInfo] };
           queues.set(i.guild.id, q);
@@ -60,23 +58,24 @@ module.exports = [
             q.songs.shift();
             playNext(i.guild.id);
           });
+          player.on('closed', () => {
+            queues.delete(i.guild.id);
+          });
+
+          const embed = new EmbedBuilder()
+            .setColor('#5865F2')
+            .setTitle('🎵 Ses Kanalında Çalınıyor')
+            .setDescription(`**[${songInfo.title}](${songInfo.url})**\n⏱️ Süre: \`${songInfo.duration}\` • İsteyen: <@${i.user.id}>`)
+            .setThumbnail(songInfo.thumb);
+          await i.editReply({ embeds: [embed] });
           playNext(i.guild.id);
         } else {
           q.songs.push(songInfo);
-          if (q.songs.length === 1) {
-            playNext(i.guild.id);
-            const embed = new EmbedBuilder()
-              .setColor('#5865F2')
-              .setTitle('🎵 Ses Kanalında Çalınıyor')
-              .setDescription(`**[${songInfo.title}](${songInfo.url})**\n⏱️ Süre: \`${songInfo.duration}\` • İsteyen: <@${i.user.id}>`)
-              .setThumbnail(songInfo.thumb);
-            await i.editReply({ embeds: [embed] });
-          } else {
-            await i.editReply(`🎶 Sıraya eklendi (**#${q.songs.length}**): **${songInfo.title}**`);
-          }
+          await i.editReply(`🎶 Sıraya eklendi (**#${q.songs.length}**): **${songInfo.title}**`);
         }
       } catch (e) {
-        await i.editReply('❌ Hata oluştu: `' + e.message + '`').catch(() => {});
+        queues.delete(i.guild.id);
+        await i.editReply('❌ Bağlantı yenilendi, tekrar `/oynat` yaz! (`' + e.message + '`)').catch(() => {});
       }
     }
   },
@@ -93,7 +92,7 @@ module.exports = [
     data: new SlashCommandBuilder().setName('durdur').setDescription('Müziği durdurur ve bot odadan çıkar.'),
     async execute(i) {
       const q = queues.get(i.guild.id);
-      if (q) { q.songs = []; await q.player.stopTrack(); queues.delete(i.guild.id); }
+      if (q) { q.songs = []; await q.player.stopTrack().catch(() => {}); queues.delete(i.guild.id); }
       const sh = getLavalink();
       if (sh) await sh.leaveVoiceChannel(i.guild.id).catch(() => {});
       await i.reply('⏹️ Müzik durduruldu ve ses kanalından çıkıldı.');
