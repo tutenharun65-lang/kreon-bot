@@ -13,9 +13,13 @@ function playNext(guildId) {
   q.player.playTrack({ track: { encoded: song.encoded } }).catch(e => console.error('PlayTrack hatası:', e));
 }
 
+function cleanName(text) {
+  return text.replace(/\(.*?\)|\[.*?\]|official|video|audio|klip|lyrics|hd|4k/gi, '').replace(/\s+/g, ' ').trim();
+}
+
 async function extractTitle(rawQuery) {
   let query = rawQuery.trim();
-  if (!/youtube\.com|youtu\.be/.test(query)) return query;
+  if (!/youtube\.com|youtu\.be/.test(query)) return cleanName(query);
 
   for (const api of [
     'https://noembed.com' + encodeURIComponent(query),
@@ -24,7 +28,7 @@ async function extractTitle(rawQuery) {
     try {
       const r = await fetch(api);
       const d = await r.json();
-      if (d && d.title) return d.title.replace(/\(.*?\)|\[.*?\]|official|video|audio|klip|lyrics|hd|4k/gi, '').replace(/\s+/g, ' ').trim();
+      if (d && d.title) return cleanName(d.title);
     } catch {}
   }
 
@@ -32,7 +36,7 @@ async function extractTitle(rawQuery) {
     const html = await (await fetch(query, { headers: { 'User-Agent': 'Mozilla/5.0' } })).text();
     const m = html.match(/<title>(.*?)<\/title>/i);
     if (m && m.at(1)) {
-      const clean = m.at(1).replace(/\s*-\s*YouTube\s*$/i, '').replace(/\(.*?\)|\[.*?\]|official|video|audio|klip|lyrics|hd|4k/gi, '').replace(/\s+/g, ' ').trim();
+      const clean = cleanName(m.at(1).replace(/\s*-\s*YouTube\s*$/i, ''));
       if (clean && clean !== 'YouTube') return clean;
     }
   } catch {}
@@ -54,33 +58,38 @@ async function resolveBestTrack(node, query) {
     } catch {}
   }
 
-  try {
-    const au = await fetch('https://audius.co' + encodeURIComponent(shortTitle || query) + '&app_name=KreonBot');
-    const auData = await au.json();
-    const tr = auData.data && auData.data.at(0);
-    if (tr) {
-      const res = await node.rest.resolve(`https://audius.co{tr.id}/stream?app_name=KreonBot`);
-      if (res?.loadType === 'track') {
-        res.data.info.title = tr.title;
-        res.data.info.uri = 'https://audius.co' + tr.permalink;
-        return res.data;
+  for (const qText of [query, shortTitle]) {
+    if (!qText) continue;
+    try {
+      const dz = await fetch('https://deezer.com' + encodeURIComponent(qText));
+      const dzData = await dz.json();
+      const item = dzData.data && dzData.data.at(0);
+      if (item && item.preview) {
+        const res = await node.rest.resolve(item.preview);
+        if (res?.loadType === 'track') {
+          res.data.info.title = `${item.artist.name} - ${item.title}`;
+          res.data.info.uri = item.link;
+          res.data.info.artworkUrl = item.album?.cover_medium || null;
+          return res.data;
+        }
       }
-    }
-  } catch {}
+    } catch {}
 
-  try {
-    const dz = await fetch('https://deezer.com' + encodeURIComponent(shortTitle || query));
-    const dzData = await dz.json();
-    const item = dzData.data && dzData.data.at(0);
-    if (item && item.preview) {
-      const res = await node.rest.resolve(item.preview);
-      if (res?.loadType === 'track') {
-        res.data.info.title = `${item.artist.name} - ${item.title}`;
-        res.data.info.uri = item.link;
-        return res.data;
+    try {
+      const it = await fetch('https://apple.com' + encodeURIComponent(qText) + '&media=music&limit=1');
+      const itData = await it.json();
+      const item = itData.results && itData.results.at(0);
+      if (item && item.previewUrl) {
+        const res = await node.rest.resolve(item.previewUrl);
+        if (res?.loadType === 'track') {
+          res.data.info.title = `${item.artistName} - ${item.trackName}`;
+          res.data.info.uri = item.trackViewUrl;
+          res.data.info.artworkUrl = item.artworkUrl100 || null;
+          return res.data;
+        }
       }
-    }
-  } catch {}
+    } catch {}
+  }
 
   return null;
 }
@@ -89,8 +98,8 @@ module.exports = [
   {
     data: new SlashCommandBuilder()
       .setName('oynat')
-      .setDescription('Şarkı adı veya YouTube/SoundCloud linki ile müzik çalar.')
-      .addStringOption(o => o.setName('şarkı').setDescription('Şarkı adı veya YouTube/SoundCloud linki').setRequired(true)),
+      .setDescription('Şarkı adı veya linki ile müzik çalar.')
+      .addStringOption(o => o.setName('şarkı').setDescription('Şarkı adı veya linki').setRequired(true)),
     async execute(i) {
       const vc = i.member.voice?.channel;
       if (!vc) return i.reply({ content: '🔊 Önce bir **ses kanalına** girmelisin!', ephemeral: true });
@@ -103,7 +112,7 @@ module.exports = [
 
         const raw = i.options.getString('şarkı');
         const query = await extractTitle(raw);
-        if (!query) return i.editReply('⚠️ YouTube bu linkin başlığını gizlemiş knk; doğrudan **şarkı adını** yazarak dene! (Örnek: `/oynat şarkı: KAVAK BAKAN`)');
+        if (!query) return i.editReply('⚠️ YouTube bu linkin başlığını gizlemiş knk; doğrudan **şarkı adını** yazarak dene!');
 
         const track = await resolveBestTrack(node, query);
         if (!track) return i.editReply(`❌ **${query}** için ses kaydı bulunamadı!`);
