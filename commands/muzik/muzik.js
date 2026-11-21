@@ -54,7 +54,7 @@ module.exports = [
 
         let q = queues.get(i.guild.id);
         if (!q || !sh.players.has(i.guild.id)) {
-          await sh.leaveVoiceChannel(i.guild.id).catch(() => {});
+          if (sh.connections.has(i.guild.id)) await sh.leaveVoiceChannel(i.guild.id).catch(() => {});
           const player = await sh.joinVoiceChannel({ guildId: i.guild.id, channelId: vc.id, shardId: 0, deaf: true });
           q = { player, songs: [songInfo] };
           queues.set(i.guild.id, q);
