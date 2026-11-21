@@ -14,36 +14,59 @@ function playNext(guildId) {
 }
 
 async function resolveBestTrack(node, rawQuery) {
-  let query = rawQuery;
+  let query = rawQuery.trim();
   if (/youtube\.com|youtu\.be/.test(query)) {
+    for (const api of [
+      'https://noembed.com' + encodeURIComponent(query),
+      'https://youtube.com' + encodeURIComponent(query)
+    ]) {
+      try {
+        const r = await fetch(api);
+        const d = await r.json();
+        if (d && d.title) {
+          query = d.title.replace(/\(.*?\)|\[.*?\]|official|video|audio|klip|lyrics|hd|4k/gi, '').replace(/\s+/g, ' ').trim();
+          break;
+        }
+      } catch {}
+    }
+  }
+
+  const shortTitle = query.split('-').at(-1).split('|').at(0).trim();
+  const attempts = /^https?:\/\//.test(query) ? [query] : ['scsearch:' + query, 'scsearch:' + shortTitle];
+
+  for (const s of attempts) {
+    if (!s || s === 'scsearch:') continue;
     try {
-      const ytRes = await fetch('https://youtube.com' + encodeURIComponent(query));
-      const ytData = await ytRes.json();
-      if (ytData && ytData.title) {
-        query = ytData.title.replace(/\(.*?\)|\[.*?\]|official|video|audio|klip|lyrics|hd|4k/gi, '').replace(/\s+/g, ' ').trim();
-      }
+      const res = await node.rest.resolve(s);
+      if (res?.loadType === 'track') return res.data;
+      if (res?.loadType === 'search' && res.data?.length) return res.data.at(0);
+      if (res?.loadType === 'playlist' && res.data?.tracks?.length) return res.data.tracks.at(0);
     } catch {}
   }
 
-  const attempts = /^https?:\/\//.test(query) ? [query] : ['scsearch:' + query, 'scsearch:' + query.split('-').pop().split('|')[0].trim()];
-  for (const s of attempts) {
-    if (!s || s === 'scsearch:') continue;
-    const res = await node.rest.resolve(s);
-    if (res?.loadType === 'track') return res.data;
-    if (res?.loadType === 'search' && res.data?.length) return res.data.at(0);
-    if (res?.loadType === 'playlist' && res.data?.tracks?.length) return res.data.tracks.at(0);
-  }
-
   try {
-    const au = await fetch('https://audius.co' + encodeURIComponent(query) + '&app_name=KreonBot');
+    const au = await fetch('https://audius.co' + encodeURIComponent(shortTitle || query) + '&app_name=KreonBot');
     const auData = await au.json();
     const tr = auData.data && auData.data.at(0);
     if (tr) {
-      const streamUrl = `https://audius.co{tr.id}/stream?app_name=KreonBot`;
-      const res = await node.rest.resolve(streamUrl);
+      const res = await node.rest.resolve(`https://audius.co{tr.id}/stream?app_name=KreonBot`);
       if (res?.loadType === 'track') {
         res.data.info.title = tr.title;
         res.data.info.uri = 'https://audius.co' + tr.permalink;
+        return res.data;
+      }
+    }
+  } catch {}
+
+  try {
+    const dz = await fetch('https://deezer.com' + encodeURIComponent(shortTitle || query));
+    const dzData = await dz.json();
+    const item = dzData.data && dzData.data.at(0);
+    if (item && item.preview) {
+      const res = await node.rest.resolve(item.preview);
+      if (res?.loadType === 'track') {
+        res.data.info.title = `${item.artist.name} - ${item.title}`;
+        res.data.info.uri = item.link;
         return res.data;
       }
     }
