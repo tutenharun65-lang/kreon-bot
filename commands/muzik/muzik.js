@@ -5,12 +5,51 @@ function playNext(guildId) {
   const q = queues.get(guildId);
   if (!q || q.songs.length === 0) {
     const sh = getLavalink();
-    if (sh) sh.leaveVoiceChannel(guildId).catch(() => {});
+    if (sh && sh.connections.has(guildId)) sh.leaveVoiceChannel(guildId).catch(() => {});
     queues.delete(guildId);
     return;
   }
   const song = q.songs.at(0);
   q.player.playTrack({ track: { encoded: song.encoded } }).catch(e => console.error('PlayTrack hatası:', e));
+}
+
+async function resolveBestTrack(node, rawQuery) {
+  let query = rawQuery;
+  if (/youtube\.com|youtu\.be/.test(query)) {
+    try {
+      const ytRes = await fetch('https://youtube.com' + encodeURIComponent(query));
+      const ytData = await ytRes.json();
+      if (ytData && ytData.title) {
+        query = ytData.title.replace(/\(.*?\)|\[.*?\]|official|video|audio|klip|lyrics|hd|4k/gi, '').replace(/\s+/g, ' ').trim();
+      }
+    } catch {}
+  }
+
+  const attempts = /^https?:\/\//.test(query) ? [query] : ['scsearch:' + query, 'scsearch:' + query.split('-').pop().trim()];
+  for (const s of attempts) {
+    if (!s || s === 'scsearch:') continue;
+    const res = await node.rest.resolve(s);
+    if (res?.loadType === 'track') return res.data;
+    if (res?.loadType === 'search' && res.data?.length) return res.data.at(0);
+    if (res?.loadType === 'playlist' && res.data?.tracks?.length) return res.data.tracks.at(0);
+  }
+
+  try {
+    const au = await fetch('https://audius.co' + encodeURIComponent(query) + '&app_name=KreonBot');
+    const auData = await au.json();
+    const tr = auData.data && auData.data.at(0);
+    if (tr) {
+      const streamUrl = `https://audius.co{tr.id}/stream?app_name=KreonBot`;
+      const res = await node.rest.resolve(streamUrl);
+      if (res?.loadType === 'track') {
+        res.data.info.title = tr.title;
+        res.data.info.uri = 'https://audius.co' + tr.permalink;
+        return res.data;
+      }
+    }
+  } catch {}
+
+  return null;
 }
 
 module.exports = [
@@ -29,23 +68,7 @@ module.exports = [
         const node = sh && sh.options.nodeResolver(sh.nodes);
         if (!node) return i.editReply('⏳ Ses sunucusu şu an uyanıyor, 5 saniye bekleyip tekrar `/oynat` yaz!');
 
-        let query = i.options.getString('şarkı');
-        if (/youtube\.com|youtu\.be/.test(query)) {
-          try {
-            const ytRes = await fetch('https://youtube.com' + encodeURIComponent(query));
-            const ytData = await ytRes.json();
-            if (ytData && ytData.title) query = ytData.title;
-          } catch {}
-        }
-
-        const searchStr = /^https?:\/\//.test(query) ? query : 'scsearch:' + query;
-        const res = await node.rest.resolve(searchStr);
-
-        let track = null;
-        if (res?.loadType === 'track') track = res.data;
-        else if (res?.loadType === 'search') track = res.data.at(0);
-        else if (res?.loadType === 'playlist') track = res.data.tracks.at(0);
-
+        const track = await resolveBestTrack(node, i.options.getString('şarkı'));
         if (!track) return i.editReply('❌ Aradığın şarkı bulunamadı!');
 
         const sn = Math.floor((track.info.length || 0) / 1000);
@@ -98,7 +121,7 @@ module.exports = [
       const q = queues.get(i.guild.id);
       if (q) { q.songs = []; await q.player.stopTrack().catch(() => {}); queues.delete(i.guild.id); }
       const sh = getLavalink();
-      if (sh) await sh.leaveVoiceChannel(i.guild.id).catch(() => {});
+      if (sh && sh.connections.has(i.guild.id)) await sh.leaveVoiceChannel(i.guild.id).catch(() => {});
       await i.reply('⏹️ Müzik durduruldu ve ses kanalından çıkıldı.');
     }
   }
