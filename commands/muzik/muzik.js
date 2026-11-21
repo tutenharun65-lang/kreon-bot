@@ -13,24 +13,34 @@ function playNext(guildId) {
   q.player.playTrack({ track: { encoded: song.encoded } }).catch(e => console.error('PlayTrack hatası:', e));
 }
 
-async function resolveBestTrack(node, rawQuery) {
+async function extractTitle(rawQuery) {
   let query = rawQuery.trim();
-  if (/youtube\.com|youtu\.be/.test(query)) {
-    for (const api of [
-      'https://noembed.com' + encodeURIComponent(query),
-      'https://youtube.com' + encodeURIComponent(query)
-    ]) {
-      try {
-        const r = await fetch(api);
-        const d = await r.json();
-        if (d && d.title) {
-          query = d.title.replace(/\(.*?\)|\[.*?\]|official|video|audio|klip|lyrics|hd|4k/gi, '').replace(/\s+/g, ' ').trim();
-          break;
-        }
-      } catch {}
-    }
+  if (!/youtube\.com|youtu\.be/.test(query)) return query;
+
+  for (const api of [
+    'https://noembed.com' + encodeURIComponent(query),
+    'https://youtube.com' + encodeURIComponent(query)
+  ]) {
+    try {
+      const r = await fetch(api);
+      const d = await r.json();
+      if (d && d.title) return d.title.replace(/\(.*?\)|\[.*?\]|official|video|audio|klip|lyrics|hd|4k/gi, '').replace(/\s+/g, ' ').trim();
+    } catch {}
   }
 
+  try {
+    const html = await (await fetch(query, { headers: { 'User-Agent': 'Mozilla/5.0' } })).text();
+    const m = html.match(/<title>(.*?)<\/title>/i);
+    if (m && m.at(1)) {
+      const clean = m.at(1).replace(/\s*-\s*YouTube\s*$/i, '').replace(/\(.*?\)|\[.*?\]|official|video|audio|klip|lyrics|hd|4k/gi, '').replace(/\s+/g, ' ').trim();
+      if (clean && clean !== 'YouTube') return clean;
+    }
+  } catch {}
+
+  return null;
+}
+
+async function resolveBestTrack(node, query) {
   const shortTitle = query.split('-').at(-1).split('|').at(0).trim();
   const attempts = /^https?:\/\//.test(query) ? [query] : ['scsearch:' + query, 'scsearch:' + shortTitle];
 
@@ -91,8 +101,12 @@ module.exports = [
         const node = sh && sh.options.nodeResolver(sh.nodes);
         if (!node) return i.editReply('⏳ Ses sunucusu şu an uyanıyor, 5 saniye bekleyip tekrar `/oynat` yaz!');
 
-        const track = await resolveBestTrack(node, i.options.getString('şarkı'));
-        if (!track) return i.editReply('❌ Aradığın şarkı bulunamadı!');
+        const raw = i.options.getString('şarkı');
+        const query = await extractTitle(raw);
+        if (!query) return i.editReply('⚠️ YouTube bu linkin başlığını gizlemiş knk; doğrudan **şarkı adını** yazarak dene! (Örnek: `/oynat şarkı: KAVAK BAKAN`)');
+
+        const track = await resolveBestTrack(node, query);
+        if (!track) return i.editReply(`❌ **${query}** için ses kaydı bulunamadı!`);
 
         const sn = Math.floor((track.info.length || 0) / 1000);
         const sure = sn > 0 ? `${Math.floor(sn / 60)}:${String(sn % 60).padStart(2, '0')}` : 'Canlı';
