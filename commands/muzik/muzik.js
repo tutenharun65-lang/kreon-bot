@@ -25,7 +25,7 @@ async function resolveBestTrack(node, rawQuery) {
     } catch {}
   }
 
-  const attempts = /^https?:\/\//.test(query) ? [query] : ['scsearch:' + query, 'scsearch:' + query.split('-').pop().trim()];
+  const attempts = /^https?:\/\//.test(query) ? [query] : ['scsearch:' + query, 'scsearch:' + query.split('-').pop().split('|')[0].trim()];
   for (const s of attempts) {
     if (!s || s === 'scsearch:') continue;
     const res = await node.rest.resolve(s);
