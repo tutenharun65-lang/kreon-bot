@@ -17,8 +17,8 @@ module.exports = [
   {
     data: new SlashCommandBuilder()
       .setName('oynat')
-      .setDescription('Lavalink ses motoruyla odaya girer ve şarkı çalar.')
-      .addStringOption(o => o.setName('şarkı').setDescription('Şarkı adı yazın (YouTube linki değil)').setRequired(true)),
+      .setDescription('Şarkı adı veya YouTube/SoundCloud linki ile müzik çalar.')
+      .addStringOption(o => o.setName('şarkı').setDescription('Şarkı adı veya YouTube/SoundCloud linki').setRequired(true)),
     async execute(i) {
       const vc = i.member.voice?.channel;
       if (!vc) return i.reply({ content: '🔊 Önce bir **ses kanalına** girmelisin!', ephemeral: true });
@@ -31,7 +31,11 @@ module.exports = [
 
         let query = i.options.getString('şarkı');
         if (/youtube\.com|youtu\.be/.test(query)) {
-          return i.editReply('⚠️ YouTube linki yerine doğrudan **şarkı adını** yaz knk! (Örnek: `/oynat şarkı: Era7capone OLABİLİR`)');
+          try {
+            const ytRes = await fetch('https://youtube.com' + encodeURIComponent(query));
+            const ytData = await ytRes.json();
+            if (ytData && ytData.title) query = ytData.title;
+          } catch {}
         }
 
         const searchStr = /^https?:\/\//.test(query) ? query : 'scsearch:' + query;
